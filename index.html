@@ -107,6 +107,24 @@
   .hud-schirm .klein { font-size: .95rem; color: #dfe9ff; }
   .hud-schirm .start-hinweis, .hud-schirm .hinweis-fest { font-size: 1.4rem; font-weight: 700; color: #ffd54a; }
 
+  .modus-liste { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin: 6px 0; }
+  .modus { min-width: 150px; padding: 8px 12px; border-radius: 12px; border: 3px solid rgba(255,255,255,.35); background: rgba(255,255,255,.08); }
+  .modus b { display: block; font-size: 1.05rem; }
+  .modus span { font-size: .85rem; color: #dfe9ff; }
+  .modus.gewaehlt { border-color: #ffd54a; background: rgba(255,213,74,.18); }
+  .hud-pflege { position: absolute; left: 10px; bottom: 10px; display: grid; gap: 6px; padding: 8px 12px; border-radius: 12px; background: rgba(18,30,60,.75); pointer-events: none; text-align: left; font-size: .9rem; font-weight: 700; }
+  .pflege-zeile { display: grid; grid-template-columns: 22px 110px auto; align-items: center; gap: 6px; }
+  .pflege-balken { height: 12px; border-radius: 99px; background: rgba(255,255,255,.2); overflow: hidden; }
+  .pflege-balken i { display: block; height: 100%; width: 100%; border-radius: 99px; transition: width .3s; }
+  .pflege-balken.hunger i { background: #ffb13d; }
+  .pflege-balken.laune i { background: #ff6fa8; }
+  .pflege-balken.leer i { background: #ff4b4b; }
+  .hud-meldung { position: absolute; left: 50%; top: 58px; transform: translateX(-50%); max-width: 80%; padding: 8px 16px; border-radius: 12px; background: rgba(255,213,74,.95); color: #25304a; font-weight: 800; font-size: 1.05rem; pointer-events: none; transition: opacity .3s; }
+  .hud-meldung[hidden], .hud-pflege[hidden], .hud-ziel[hidden] { display: none; }
+  .hud-auftrag { position: absolute; left: 10px; top: 52px; max-width: 46%; padding: 6px 12px; border-radius: 12px; background: rgba(18,30,60,.75); font-weight: 700; text-align: left; pointer-events: none; }
+  .hud-auftrag:empty { display: none; }
+  @media (max-width: 640px) { .pflege-zeile { grid-template-columns: 20px 60px auto; } .hud-pflege { font-size: .75rem; } .modus { min-width: 110px; } }
+
   /* ---- Navigation ---- */
   .nav { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; padding: 14px 16px 0; max-width: 1000px; margin: 0 auto; }
   .nav a { padding: 6px 12px; border-radius: 99px; background: #fff; border: 2px solid var(--linie); color: var(--blau-dunkel); font-weight: 700; text-decoration: none; font-size: .95rem; }
@@ -191,7 +209,7 @@
   <div class="hero-emoji">🐴📦🏰</div>
   <h1>Horse World (Switzerland)</h1>
   <p>Reite durch Zug, liefere Pakete aus und fange entlaufene Fohlen ein.</p>
-  <a class="badge" href="#spiel">🎮 Jetzt spielen: in 3D zur OYM-Halle</a>
+  <a class="badge" href="#spiel">🎮 Jetzt spielen: Kurier, Fohlen oder OYM-Ritt</a>
 </header>
 
 <nav class="nav" aria-label="Inhalt">
@@ -320,8 +338,8 @@
   <ol class="phasen">
     <li class="phase fertig-phase"><span class="gross">💡</span><h3>Idee</h3><p>Was soll es werden? Wer spielt es? Was ist das Ziel?</p><span class="status">✅ Grobe Idee steht</span></li>
     <li class="phase fertig-phase"><span class="gross">📝</span><h3>Plan</h3><p>Die Idee in kleine Schritte teilen. Das ist der Projektplan weiter unten.</p><span class="status">✅ Fertig</span></li>
-    <li class="phase hier"><span class="gross">🎨</span><h3>Design</h3><p>Wie sieht es aus? Skizziert auf Papier: Karte, Pferd, Farben, Texte.</p><span class="status">📍 Hier sind wir</span></li>
-    <li class="phase"><span class="gross">⌨️</span><h3>Bauen</h3><p>Claude schreibt den Code. Ein Schritt, ein Speicherpunkt.</p><span class="status">⏳ Kommt als Nächstes</span></li>
+    <li class="phase fertig-phase"><span class="gross">🎨</span><h3>Design</h3><p>Wie sieht es aus? Skizziert auf Papier: Karte, Pferd, Farben, Texte.</p><span class="status">✅ Fertig</span></li>
+    <li class="phase hier"><span class="gross">⌨️</span><h3>Bauen</h3><p>Claude schreibt den Code. Ein Schritt, ein Speicherpunkt.</p><span class="status">📍 Hier sind wir: Kurier, Pflege, Effekte und Fohlen sind drin</span></li>
     <li class="phase"><span class="gross">🧪</span><h3>Testen</h3><p>Spielen und Fehler (Bugs) suchen. Ein Roboter-Spieler hilft: Er drückt Tasten und prüft, ob etwas kaputtgeht.</p><span class="status">⏳ Nach jedem Schritt</span></li>
     <li class="phase"><span class="gross">🚀</span><h3>Veröffentlichen</h3><p>Auf GitHub speichern und ins Internet stellen. Dann kann jede Person mit dem Link spielen.</p><span class="status">⏳ Nach jedem Schritt</span></li>
     <li class="phase"><span class="gross">🔁</span><h3>Verbessern</h3><p>Freunde spielen lassen, Ideen sammeln, neue Schritte planen. Dann geht es wieder bei Phase 1 los.</p><span class="status">♾️ Immer wieder</span></li>
@@ -569,26 +587,33 @@
 
   <!-- ============ Das Spiel ============ -->
   <h2 id="spiel">🎮 Das Spiel</h2>
-  <p class="lead">Reite in 3D von Zuhause durch die echten Strassen von Zug bis zur OYM-Halle. Klick aufs Spielfeld und drück Enter.</p>
+  <p class="lead">Reite in 3D durch die echten Strassen von Zug: als Pferde-Kurier, auf der Suche nach entlaufenen Fohlen oder bis zur OYM-Halle. Klick aufs Spielfeld, wähl einen Modus und drück Enter.</p>
   <div class="spielbox">
     <div class="spielfeld">
       <canvas id="game" width="960" height="540" tabindex="0" aria-label="Spielfeld"></canvas>
       <div id="hud-leiste" class="hud-leiste"></div>
       <div class="hud-ziel"><span id="hud-pfeil" class="hud-pfeil">⬆️</span><span id="hud-ziel"></span></div>
       <canvas id="hud-karte" class="hud-karte" width="180" height="180"></canvas>
+      <div id="hud-auftrag" class="hud-auftrag"></div>
+      <div id="hud-meldung" class="hud-meldung" hidden></div>
+      <div id="hud-pflege" class="hud-pflege">
+        <div class="pflege-zeile">🥕<div class="pflege-balken hunger"><i id="balken-hunger"></i></div><span id="text-hunger"></span></div>
+        <div class="pflege-zeile">❤️<div class="pflege-balken laune"><i id="balken-laune"></i></div><span id="text-laune"></span></div>
+      </div>
       <div id="hud-start" class="hud-schirm">
         <h3>🐎 Horse World <small>(Switzerland)</small></h3>
-        <p>Reite von Zuhause zur OYM-Halle! Sammle unterwegs Karotten 🥕.</p>
-        <p class="klein">W / ⬆️ = vorwärts · A D / ⬅️ ➡️ = lenken · S / ⬇️ = rückwärts · Leertaste = Galopp · R = Neustart</p>
+        <p>Wähle mit 1, 2 oder 3:</p>
+        <div class="modus-liste" id="modus-liste"></div>
+        <p class="klein">W / ⬆️ = vorwärts · A D / ⬅️ ➡️ = lenken · S / ⬇️ = rückwärts · Leertaste = Galopp<br>E = Paket oder Fohlen · F = Karotte füttern · G = streicheln · R = Neustart · M = Menü</p>
         <p class="start-hinweis"></p>
       </div>
       <div id="hud-ende" class="hud-schirm" hidden>
         <h3 id="hud-ende-titel"></h3>
         <p id="hud-ende-text"></p>
-        <p class="hinweis-fest">Drücke R für eine neue Runde</p>
+        <p class="hinweis-fest">R = nochmal · M = Menü</p>
       </div>
     </div>
-    <p>Klick aufs Feld · Enter = Start · W A S D oder Pfeile = reiten · Leertaste = Galopp · R = Neustart</p>
+    <p>Klick aufs Feld · 1 2 3 = Modus · Enter = Start · W A S D oder Pfeile = reiten · Leertaste = Galopp · E F G = Paket/Fohlen, füttern, streicheln</p>
     <p><small>Karte: © <a href="https://www.openstreetmap.org/copyright" style="color:#9fd4ff">OpenStreetMap-Mitwirkende</a> · Häuser: swissBUILDINGS3D © <a href="https://www.swisstopo.admin.ch" style="color:#9fd4ff">swisstopo</a> · 3D: three.js</small></p>
   </div>
 
@@ -648,6 +673,34 @@ const SETTINGS = {
   flatRoofSlope: 0.12,     // Dächer, die weniger steil sind, gelten als Flachdach (Kies statt Ziegel)
   mountainCount: 46,       // Berge am Horizont
   cloudCount: 16,          // Wolken am Himmel
+  // --- Modus 1: Pferde-Kurier ---
+  deliveriesToWin: 10,     // So viele Lieferungen bis »Geschafft!«
+  courierStartSeconds: 30, // Zeit am Anfang (dazu kommt die Zeit für den ersten Auftrag)
+  secondsPerOrder: 15,     // Feste Zusatzzeit pro Auftrag
+  metersPerBonusSecond: 9, // Pro so viele Meter Weg gibt es eine Sekunde dazu (kleiner = mehr Zeit)
+  pointsPerDelivery: 100,  // Punkte pro Lieferung
+  handoverDistance: 14,    // So nah musst du an Laden oder Haus heran, um mit E abzuholen oder abzugeben
+  // --- Pflege: Hunger und Laune ---
+  startCarrots: 2,         // Karotten im Rucksack am Anfang
+  hungerPerSecond: 0.7,    // So schnell sinkt der Hunger-Balken beim Reiten (von 100)
+  gallopHungerFactor: 2.5, // Im Galopp wird das Pferd so viel schneller hungrig
+  carrotFeeds: 35,         // So viel füllt eine Karotte den Hunger-Balken
+  moodPerBump: 15,         // So viel Laune kostet ein Zusammenstoss
+  moodPerSecond: 0.15,     // So langsam sinkt die Laune von allein
+  moodPerPat: 12,          // So viel Laune gibt einmal Streicheln (G)
+  sadSpeedFactor: 0.75,    // Mit schlechter Laune ist das Pferd so viel langsamer
+  // --- Modus 2: Entlaufene Fohlen ---
+  foalCount: 10,           // So viele Fohlen sind ausgebüxt
+  sunsetSeconds: 600,      // Zeit bis die Sonne untergeht (600 = 10 Minuten)
+  pointsPerFoal: 100,      // Punkte pro Fohlen im Stall
+  catchDistance: 5,        // So nah musst du an ein Fohlen heran, um es mit E einzufangen
+  scareDistance: 28,       // Im Galopp näher als so viele Meter: Das Fohlen rennt weg
+  foalRunSpeed: 8,         // So schnell rennt ein erschrecktes Fohlen
+  stableRadius: 22,        // So nah am Stall müssen die Fohlen sein
+  // --- Effekte ---
+  sound: true,             // Geräusche an (false = still)
+  dust: true,              // Staubwolken im Galopp
+  foalSize: 0.6,           // Wie gross ein Fohlen im Vergleich zum Pferd ist
   colors: {
     hoof: '#2a2522',       // Hufe
     saddle: '#4a2f1c',     // Sattel aus Leder
@@ -847,6 +900,14 @@ const hud = {
   arrow: document.getElementById('hud-pfeil'),
   goal: document.getElementById('hud-ziel'),
   minimap: document.getElementById('hud-karte'),
+  list: document.getElementById('modus-liste'),
+  care: document.getElementById('hud-pflege'),
+  msg: document.getElementById('hud-meldung'),
+  order: document.getElementById('hud-auftrag'),
+  hungerBar: document.getElementById('balken-hunger'),
+  moodBar: document.getElementById('balken-laune'),
+  hungerText: document.getElementById('text-hunger'),
+  moodText: document.getElementById('text-laune'),
 };
 const keys = new Set();
 const gameHasFocus = () => document.activeElement === canvas; // Tasten zählen nur nach einem Klick aufs Feld
@@ -856,8 +917,18 @@ addEventListener('keydown', e => {
   const key = e.key.toLowerCase();
   keys.add(key);
   if (e.key.startsWith('Arrow') || e.key === ' ') e.preventDefault();
-  if (key === 'enter' && game.state === 'start') startGame();
+  if (e.repeat) return;
+  if (game.state === 'start') {
+    if (MODES[key]) { game.mode = key; showScreens(); }
+    if (key === 'enter') startGame();
+    return;
+  }
   if (key === 'r') startGame();
+  if (key === 'm' || key === 'escape') { game.state = 'start'; resetSky(); hud.msg.hidden = true; game.msgTime = 0; showScreens(); }
+  if (game.state !== 'play') return;
+  if (key === 'e') actionKey();
+  if (key === 'f') feedKey();
+  if (key === 'g') patKey();
 });
 addEventListener('keyup', e => keys.delete(e.key.toLowerCase()));
 canvas.addEventListener('blur', () => keys.clear());
@@ -868,11 +939,25 @@ canvas.addEventListener('blur', showScreens);
 const pressed = (...names) => names.some(n => keys.has(n));
 
 // ---------- Spielzustand ----------
+const MODES = {
+  '1': { emoji: '📦', name: 'Pferde-Kurier', text: '10 Lieferungen gegen die Uhr' },
+  '2': { emoji: '🐴', name: 'Entlaufene Fohlen', text: '10 Fohlen heim vor Sonnenuntergang' },
+  '3': { emoji: '🏟️', name: 'Ritt zur OYM-Halle', text: 'So schnell wie möglich hin' },
+};
 const game = {
   state: 'start',     // 'start', 'play', 'won' oder 'lost'
-  timeLeft: SETTINGS.timeLimitSeconds, // Sekunden bis »Zeit um!«
-  carrots: 0,         // eingesammelte Karotten
+  mode: '1',          // '1' Kurier, '2' Fohlen, '3' OYM-Ritt
+  timeLeft: SETTINGS.timeLimitSeconds, // Sekunden bis »Zeit um!« oder Sonnenuntergang
+  timeTotal: SETTINGS.timeLimitSeconds,
+  carrots: 0,         // eingesammelte Karotten (für Punkte)
+  bag: 0,             // Karotten im Rucksack (zum Füttern)
+  hunger: 100,        // 100 = satt, 0 = hungrig
+  mood: 100,          // 100 = fröhlich, 0 = traurig
   score: 0,
+  deliveries: 0,
+  order: null,        // aktueller Auftrag { item, from, to, carrying }
+  foalsHome: 0,
+  bumpCooldown: 0,
   horse: { x: 0, z: 0, heading: 0, speed: 0, step: 0 },
 };
 
@@ -885,7 +970,8 @@ const scene = new THREE.Scene();
 scene.background = new THREE.Color(SETTINGS.colors.sky);
 scene.fog = new THREE.Fog(SETTINGS.colors.sky, SETTINGS.viewDistance * 0.4, SETTINGS.viewDistance);
 const camera = new THREE.PerspectiveCamera(60, canvas.width / canvas.height, 0.3, SETTINGS.viewDistance + 50);
-scene.add(new THREE.HemisphereLight('#d6ebff', '#5f7d43', 0.62));
+const hemi = new THREE.HemisphereLight('#d6ebff', '#5f7d43', 0.62);
+scene.add(hemi);
 
 // Die Sonne: ein Licht, das Schatten wirft. Es wandert mit dem Pferd mit.
 const sunDir = new THREE.Vector3(...SETTINGS.sunDirection).normalize();
@@ -1385,9 +1471,11 @@ function buildGoal() {
     new THREE.MeshBasicMaterial({ color: SETTINGS.colors.goalBeam, transparent: true, opacity: 0.35, side: THREE.DoubleSide, fog: false }));
   beam.position.set(x, 100, z);
   scene.add(beam);
-  makeSign('🏟️ ' + MAP.goalName, x, 45, z, 10);
+  const sign = makeSign('🏟️ ' + MAP.goalName, x, 45, z, 10);
   const [hx, hz] = MAP.start;
-  makeSign('🏠 Zuhause', hx, 14, hz, 4);
+  const home = makeSign('🏠 Zuhause', hx, 14, hz, 4);
+  const stable = makeSign('🐴 Stall', hx, 14, hz, 4);
+  return { oym: [beam, sign], home, stable };
 }
 
 // ---------- Kleine Bauteile aus Klötzen (für Karotten und Co.) ----------
@@ -1845,9 +1933,9 @@ function buildRider(parts) {
 }
 
 // ---------- Das Pferd zusammenbauen ----------
-function buildHorse() {
+// Ein Fohlen ist dasselbe Pferd ohne Sattel, Zaum und Reiterin
+function buildHorse({ coatName = pickCoatName(), foal = false } = {}) {
   const c = SETTINGS.colors;
-  const coatName = pickCoatName();
   const coat = SETTINGS.coats[coatName];
   const mat = color => new THREE.MeshLambertMaterial({ color });
   const fur = map => new THREE.MeshStandardMaterial({ map, roughness: SETTINGS.coatShine });   // Fell glänzt in der Sonne
@@ -1877,10 +1965,18 @@ function buildHorse() {
   horse.userData.hair.forEach(curtain => horse.add(curtain));
   horse.userData.tail = makeLoft(tailPoints(0, 0), 30, 10);
   horse.add(new THREE.Mesh(horse.userData.tail.geo, parts.tail));
-  buildSaddle(horse, parts);
-  buildBridle(horse, parts);
-  horse.userData.rider = buildRider(parts);
-  horse.add(horse.userData.rider);
+  if (!foal) {
+    buildSaddle(horse, parts);
+    buildBridle(horse, parts);
+    horse.userData.rider = buildRider(parts);
+    horse.add(horse.userData.rider);
+    // Paket hinter dem Sattel: nur sichtbar, wenn wir etwas ausliefern
+    const parcel = box(0.7, 0.5, 0.5, '#c8954f', 0, SADDLE_SPOT.y + 0.12, SADDLE_SPOT.z - 0.75);
+    parcel.add(box(0.72, 0.08, 0.52, '#e04a3a', 0, 0.05, 0));
+    parcel.visible = false;
+    horse.add(parcel);
+    horse.userData.parcel = parcel;
+  }
   horse.traverse(part => { part.castShadow = true; });
   animateHorse(horse, 0, 0, 0);
   scene.add(horse);
@@ -1922,6 +2018,7 @@ function placeOnHead(horse, gallop) {
     mesh.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(fr.side, fr.up, fr.along));
     if (spot.fitAround) mesh.scale.set(fr.w + 0.012, fr.h + 0.012, 0.25);
   }
+  if (!horse.userData.rider) return;            // Fohlen haben keine Reiterin und keinen Zaum
   // Reiterin: im Galopp nach vorne lehnen (leichter Sitz)
   const upperBody = horse.userData.rider.userData.upperBody;
   upperBody.rotation.x = 0.08 + gallop * 0.35;
@@ -2180,7 +2277,7 @@ function buildFences() {
 // ---------- Himmel, Sonne, Berge und Wolken ----------
 // Alles hier ist sehr weit weg. Darum reist es mit der Kamera mit, wie eine riesige Kulisse.
 const SKY_RADIUS = SETTINGS.viewDistance + 20;
-let skyGroup, cloudGroup;
+let skyGroup, cloudGroup, skyDome, sunDisc;
 
 function buildSkyDome() {
   const geo = new THREE.SphereGeometry(SKY_RADIUS, 32, 16);
@@ -2194,6 +2291,7 @@ function buildSkyDome() {
   geo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
   const dome = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.BackSide, fog: false, depthWrite: false }));
   dome.renderOrder = -2;
+  skyDome = dome;
   return dome;
 }
 
@@ -2271,7 +2369,8 @@ function buildClouds() {
 function buildSky() {
   skyGroup = new THREE.Group();
   cloudGroup = buildClouds();
-  skyGroup.add(buildSkyDome(), buildSunDisc(), buildMountains(), cloudGroup);
+  sunDisc = buildSunDisc();
+  skyGroup.add(buildSkyDome(), sunDisc, buildMountains(), cloudGroup);
   scene.add(skyGroup);
 }
 
@@ -2329,7 +2428,10 @@ function drawMinimap() {
     g.arc(clamp(x * minimapScale - left), clamp(z * minimapScale - top), r, 0, Math.PI * 2); g.fill(); g.stroke();
   };
   dot(MAP.start[0], MAP.start[1], '#1b6ec2', 4);
-  dot(MAP.goal[0], MAP.goal[1], '#ff3d7f', 6);
+  if (game.mode === '3') dot(MAP.goal[0], MAP.goal[1], '#ff3d7f', 6);
+  if (game.mode === '2') foals.forEach(f => { if (f.state === 'wild') dot(f.x, f.z, '#8a5bd6', 4); });
+  const t = currentTarget();
+  if (t && game.mode !== '3') dot(t.x, t.z, '#ff8c1a', 6);
   g.save();                                               // Pferd als Pfeil in der Mitte
   g.translate(size / 2, size / 2);
   g.rotate(-h.heading);
@@ -2340,49 +2442,590 @@ function drawMinimap() {
 }
 
 // ---------- Geräusche aus WebAudio ----------
-let audio = null;
-function beep(freq, duration) {
+// Alle Töne werden mit Code gemacht: kein Download nötig.
+let audio = null, noiseBuffer = null;
+function sound() {
+  if (!SETTINGS.sound) return null;
   try {
     audio = audio || new AudioContext();
-    const osc = audio.createOscillator(), gain = audio.createGain();
-    osc.frequency.value = freq;
-    gain.gain.setValueAtTime(0.15, audio.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, audio.currentTime + duration);
-    osc.connect(gain).connect(audio.destination);
-    osc.start(); osc.stop(audio.currentTime + duration);
-  } catch (e) { /* kein Ton möglich: macht nichts */ }
+    if (audio.state === 'suspended') audio.resume();
+    return audio;
+  } catch (e) { return null; }   // kein Ton möglich: macht nichts
+}
+function beep(freq, duration, delay = 0, type = 'sine', volume = 0.15) {
+  const a = sound(); if (!a) return;
+  const t = a.currentTime + delay;
+  const osc = a.createOscillator(), gain = a.createGain();
+  osc.type = type;
+  osc.frequency.value = freq;
+  gain.gain.setValueAtTime(volume, t);
+  gain.gain.exponentialRampToValueAtTime(0.001, t + duration);
+  osc.connect(gain).connect(a.destination);
+  osc.start(t); osc.stop(t + duration + 0.02);
+}
+// Rauschen durch einen Filter: daraus werden Hufe, Kauen und Rumpeln
+function noise(duration, freq, q, volume, delay = 0) {
+  const a = sound(); if (!a) return;
+  if (!noiseBuffer) {
+    noiseBuffer = a.createBuffer(1, a.sampleRate / 2, a.sampleRate);
+    const d = noiseBuffer.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+  }
+  const t = a.currentTime + delay;
+  const src = a.createBufferSource(), filter = a.createBiquadFilter(), gain = a.createGain();
+  src.buffer = noiseBuffer;
+  filter.type = 'bandpass'; filter.frequency.value = freq; filter.Q.value = q;
+  gain.gain.setValueAtTime(volume, t);
+  gain.gain.exponentialRampToValueAtTime(0.001, t + duration);
+  src.connect(filter).connect(gain).connect(a.destination);
+  src.start(t, Math.random() * 0.3); src.stop(t + duration + 0.02);
+}
+function clop(delay = 0) { noise(0.06, 700 + Math.random() * 400, 4, 0.28, delay); beep(170 + Math.random() * 40, 0.05, delay, 'triangle', 0.06); }
+function chew() { for (let i = 0; i < 4; i++) noise(0.07, 320 + Math.random() * 120, 2, 0.3, i * 0.15); }
+function thud() { beep(90, 0.25, 0, 'sine', 0.3); noise(0.12, 220, 1, 0.3); }
+function jingle() { [523, 659, 784, 1047].forEach((f, i) => beep(f, 0.2, i * 0.1, 'triangle', 0.16)); }
+function sadTune() { [392, 330, 262].forEach((f, i) => beep(f, 0.35, i * 0.25, 'triangle', 0.14)); }
+function tick() { beep(1300, 0.05, 0, 'square', 0.04); }
+// Wiehern: ein Ton, der hochgeht, zittert und wieder abfällt. pitch > 1 klingt wie ein Fohlen.
+function neigh(pitch = 1) {
+  const a = sound(); if (!a) return;
+  const t = a.currentTime;
+  const osc = a.createOscillator(), lfo = a.createOscillator(), wobble = a.createGain();
+  const filter = a.createBiquadFilter(), gain = a.createGain();
+  osc.type = 'sawtooth';
+  lfo.frequency.value = 13;
+  wobble.gain.value = 45 * pitch;
+  lfo.connect(wobble).connect(osc.frequency);
+  osc.frequency.setValueAtTime(600 * pitch, t);
+  osc.frequency.linearRampToValueAtTime(1050 * pitch, t + 0.15);
+  osc.frequency.linearRampToValueAtTime(780 * pitch, t + 0.6);
+  osc.frequency.linearRampToValueAtTime(420 * pitch, t + 0.95);
+  filter.type = 'bandpass'; filter.frequency.value = 1500 * pitch; filter.Q.value = 1.4;
+  gain.gain.setValueAtTime(0.001, t);
+  gain.gain.exponentialRampToValueAtTime(0.13, t + 0.05);
+  gain.gain.setValueAtTime(0.13, t + 0.6);
+  gain.gain.exponentialRampToValueAtTime(0.001, t + 0.98);
+  osc.connect(filter).connect(gain).connect(a.destination);
+  osc.start(t); lfo.start(t); osc.stop(t + 1); lfo.stop(t + 1);
+}
+
+// ---------- Effekte: Staub, Konfetti, Herzchen, Krümel ----------
+function emojiTexture(emoji) {
+  const c = document.createElement('canvas');
+  c.width = c.height = 128;
+  const g = c.getContext('2d');
+  g.font = '100px system-ui, "Apple Color Emoji", "Segoe UI Emoji", sans-serif';
+  g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.fillText(emoji, 64, 72);
+  return new THREE.CanvasTexture(c);
+}
+function blobTexture(r, gr, b) {
+  const c = document.createElement('canvas');
+  c.width = c.height = 64;
+  const g = c.getContext('2d');
+  const glow = g.createRadialGradient(32, 32, 2, 32, 32, 32);
+  glow.addColorStop(0, `rgba(${r},${gr},${b},0.9)`); glow.addColorStop(1, `rgba(${r},${gr},${b},0)`);
+  g.fillStyle = glow; g.fillRect(0, 0, 64, 64);
+  return new THREE.CanvasTexture(c);
+}
+const FX = { dust: blobTexture(190, 160, 115), heart: emojiTexture('❤️'), crumb: blobTexture(255, 140, 30) };
+const CONFETTI_COLORS = ['#ff3d7f', '#ffd54a', '#3bb273', '#1b6ec2', '#8a5bd6', '#ff8c1a'];
+const confettiGeometry = new THREE.PlaneGeometry(0.35, 0.22);
+const particles = [];
+
+function spawnSprite(texture, x, y, z, { vx = 0, vy = 0, vz = 0, size = 1, grow = 0, life = 1, gravity = 0 } = {}) {
+  const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture, transparent: true, depthWrite: false }));
+  sprite.position.set(x, y, z);
+  sprite.scale.setScalar(size);
+  scene.add(sprite);
+  particles.push({ obj: sprite, vx, vy, vz, size, grow, life, maxLife: life, gravity, spin: 0 });
+}
+function confetti(x, y, z, count) {
+  for (let i = 0; i < count; i++) {
+    const piece = new THREE.Mesh(confettiGeometry, new THREE.MeshBasicMaterial({
+      color: CONFETTI_COLORS[i % CONFETTI_COLORS.length], side: THREE.DoubleSide, transparent: true }));
+    piece.position.set(x, y, z);
+    piece.rotation.set(Math.random() * 6, Math.random() * 6, 0);
+    scene.add(piece);
+    const a = Math.random() * Math.PI * 2, s = 3 + Math.random() * 6;
+    particles.push({ obj: piece, vx: Math.sin(a) * s, vy: 7 + Math.random() * 8, vz: Math.cos(a) * s,
+      size: 1, grow: 0, life: 2.5, maxLife: 2.5, gravity: 12, spin: 4 + Math.random() * 6 });
+  }
+}
+function hearts(x, y, z, count = 3) {
+  for (let i = 0; i < count; i++) {
+    spawnSprite(FX.heart, x + (Math.random() - 0.5) * 1.5, y + Math.random(), z + (Math.random() - 0.5) * 1.5,
+      { vy: 1.5 + Math.random(), size: 0.9, grow: 0.3, life: 1.6 });
+  }
+}
+function updateParticles(dt) {
+  for (let i = particles.length - 1; i >= 0; i--) {
+    const p = particles[i];
+    p.life -= dt;
+    if (p.life <= 0 || p.obj.position.y < -1) {
+      scene.remove(p.obj);
+      p.obj.material.dispose();
+      particles.splice(i, 1);
+      continue;
+    }
+    p.vy -= p.gravity * dt;
+    if (p.spin) { p.vx *= 1 - dt * 1.5; p.vz *= 1 - dt * 1.5; p.vy = Math.max(p.vy, -3); }  // Konfetti segelt langsam
+    p.obj.position.x += p.vx * dt;
+    p.obj.position.y += p.vy * dt;
+    p.obj.position.z += p.vz * dt;
+    if (p.spin) { p.obj.rotation.x += p.spin * dt; p.obj.rotation.y += p.spin * 0.7 * dt; }
+    else p.obj.scale.setScalar(p.size + p.grow * (p.maxLife - p.life));
+    p.obj.material.opacity = Math.min(1, p.life / (p.maxLife * 0.4));
+  }
+}
+function clearParticles() {
+  for (const p of particles) { scene.remove(p.obj); p.obj.material.dispose(); }
+  particles.length = 0;
+}
+
+// ---------- Meldungen in der Mitte oben ----------
+function message(text, seconds = 3.5) {
+  hud.msg.textContent = text;
+  hud.msg.hidden = false;
+  game.msgTime = seconds;
+}
+
+// ---------- Rekorde (bleiben in diesem Browser gespeichert) ----------
+function loadBest(mode) {
+  try { return Number(localStorage.getItem('horse-world-rekord-' + mode)) || 0; } catch (e) { return 0; }
+}
+function saveBest(mode, score) {
+  try { localStorage.setItem('horse-world-rekord-' + mode, String(score)); } catch (e) { /* geht nicht: macht nichts */ }
+}
+
+// ---------- Orte für Aufträge und Fohlen ----------
+// Mit fester Startzahl gewählt: Die Läden und Fohlen-Verstecke sind jedes Mal am selben Ort.
+const dist = (a, b) => Math.hypot(a.x - b.x, a.z - b.z);
+const horsePos = () => ({ x: game.horse.x, z: game.horse.z });
+const homePos = { x: MAP.start[0], z: MAP.start[1] };
+
+function freeAround(x, z, r) {
+  if (x < 10 || z < 10 || x > MAP.width - 10 || z > MAP.depth - 10) return false;
+  if (isBlocked(x, z)) return false;
+  for (let a = 0; a < 6.28; a += 0.785) if (isBlocked(x + Math.sin(a) * r, z + Math.cos(a) * r)) return false;
+  return true;
+}
+function spreadOut(candidates, count, spacing, rand, keepAway = []) {
+  const pool = candidates.slice(), chosen = [];
+  while (chosen.length < count && pool.length) {
+    const p = pool.splice(Math.floor(rand() * pool.length), 1)[0];
+    if ([...chosen, ...keepAway].every(q => dist(p, q) >= spacing)) chosen.push(p);
+  }
+  return chosen;
+}
+function pickSpots(candidates, count, spacing, rand, keepAway) {
+  for (let s = spacing; s > 20; s *= 0.8) {          // klappt es nicht, rücken die Orte näher zusammen
+    const spots = spreadOut(candidates, count, s, makeRandom(rand), keepAway);
+    if (spots.length === count) return spots;
+  }
+  return spreadOut(candidates, count, 0, makeRandom(rand), keepAway);
+}
+
+const SHOP_NAMES = ['🍕 Pizzeria', '📮 Post', '🥐 Bäckerei', '💐 Blumenladen', '🧀 Käserei', '🐄 Bauernhof', '🏫 Schule',
+  '🛝 Spielplatz', '🐾 Tierarzt', '🚲 Velo-Laden', '📚 Bibliothek', '👵 Oma Rosa', '🚒 Feuerwehr', '🍦 Glacestand'];
+const ITEMS = ['🍕 Pizza', '📦 Paket', '✉️ Brief', '🎂 Kirschtorte', '💐 Blumen', '🧀 Käse', '🍫 Schoggi', '🥕 Rüebli'];
+
+function findShops() {
+  const candidates = [];
+  for (const road of MAP.roads) {
+    if (road[0] > 1) continue;                         // nur Haupt- und Quartierstrassen
+    for (const p of toPoints(road, 1)) if (freeAround(p.x, p.z, 4)) candidates.push(p);
+  }
+  return pickSpots(candidates, SHOP_NAMES.length, 220, 4242, [homePos])
+    .map((p, i) => ({ x: p.x, z: p.z, name: SHOP_NAMES[i] }));
+}
+function findFoalSpots() {
+  const candidates = [], rand = makeRandom(9001);
+  for (const area of MAP.areas) {
+    if (!['wiese', 'wald', 'acker', 'platz'].includes(area[0])) continue;
+    const poly = toPoints(area, 1);
+    const xs = poly.map(p => p.x), zs = poly.map(p => p.z);
+    const minX = Math.min(...xs), maxX = Math.max(...xs), minZ = Math.min(...zs), maxZ = Math.max(...zs);
+    for (let k = 0; k < 12; k++) {
+      const x = minX + rand() * (maxX - minX), z = minZ + rand() * (maxZ - minZ);
+      if (insidePolygon(x, z, poly) && freeAround(x, z, 3) && dist({ x, z }, homePos) > 250) candidates.push({ x, z });
+    }
+  }
+  return pickSpots(candidates, SETTINGS.foalCount, 260, 777, [homePos]);
+}
+// Plätze im Stall: im Kreis ums Zuhause, wo kein Haus steht
+function findPenSpots() {
+  const spots = [];
+  for (let r = 6; r < 30 && spots.length < SETTINGS.foalCount; r += 3) {
+    for (let a = 0; a < 6.28 && spots.length < SETTINGS.foalCount; a += 0.6) {
+      const x = homePos.x + Math.sin(a) * r, z = homePos.z + Math.cos(a) * r;
+      if (!isBlocked(x, z) && spots.every(s => dist(s, { x, z }) > 3.5)) spots.push({ x, z });
+    }
+  }
+  while (spots.length < SETTINGS.foalCount) spots.push({ ...homePos });
+  return spots;
+}
+
+// ---------- Modus 1: Läden, Aufträge und Lichtsäule ----------
+let SHOPS = [], courierMarkers, targetBeam;
+
+function buildShops() {
+  SHOPS = findShops();
+  courierMarkers = new THREE.Group();
+  for (const s of SHOPS) {
+    courierMarkers.add(box(0.3, 6, 0.3, '#6b4a2e', s.x, 3, s.z));
+    courierMarkers.add(makeSign(s.name, s.x, 7, s.z, 1.8));   // makeSign legt das Schild in die Szene; add() holt es in die Gruppe
+  }
+  courierMarkers.visible = false;
+  scene.add(courierMarkers);
+  targetBeam = new THREE.Mesh(new THREE.CylinderGeometry(2.5, 2.5, 80, 16, 1, true),
+    new THREE.MeshBasicMaterial({ color: '#ff8c1a', transparent: true, opacity: 0.4, side: THREE.DoubleSide, fog: false, depthWrite: false }));
+  targetBeam.visible = false;
+  scene.add(targetBeam);
+}
+
+function newOrder() {
+  const here = horsePos();
+  let from, to;
+  for (let tries = 0; tries < 60; tries++) {           // nicht zu nah, nicht zu weit
+    from = SHOPS[Math.floor(Math.random() * SHOPS.length)];
+    to = SHOPS[Math.floor(Math.random() * SHOPS.length)];
+    const d = dist(from, to);
+    if (from !== to && d > 250 && d < 1100 && dist(here, from) < 1000) break;
+  }
+  const way = dist(here, from) + dist(from, to);
+  game.timeLeft += SETTINGS.secondsPerOrder + way / SETTINGS.metersPerBonusSecond;
+  const item = ITEMS[Math.floor(Math.random() * ITEMS.length)];
+  game.order = { item, from, to, carrying: false };
+  message('Neuer Auftrag: ' + item + ' abholen bei ' + from.name, 4.5);
+  beep(660, 0.12); beep(880, 0.15, 0.12);
+}
+
+function courierAction() {
+  const o = game.order;
+  if (!o) return;
+  const spot = o.carrying ? o.to : o.from;
+  if (dist(horsePos(), spot) > SETTINGS.handoverDistance) { message('Reite näher zu ' + spot.name + '. Folge dem Pfeil!'); return; }
+  if (!o.carrying) {
+    o.carrying = true;
+    horseModel.userData.parcel.visible = true;
+    message(o.item + ' abgeholt! Bring es zu ' + o.to.name, 4);
+    beep(520, 0.1); beep(780, 0.15, 0.1);
+    return;
+  }
+  game.deliveries++;
+  horseModel.userData.parcel.visible = false;
+  confetti(game.horse.x, 4, game.horse.z, 70);
+  jingle();
+  if (game.deliveries >= SETTINGS.deliveriesToWin) { endGame(true); return; }
+  message('Geliefert! ' + game.deliveries + ' von ' + SETTINGS.deliveriesToWin + ' · +' + SETTINGS.pointsPerDelivery + ' Punkte', 3);
+  setTimeout(() => { if (game.state === 'play' && game.mode === '1') newOrder(); }, 1500);
+  game.order = null;
+}
+
+// ---------- Modus 2: Entlaufene Fohlen ----------
+let foals = [], penSpots = [], trail = [];
+
+function buildFoals() {
+  penSpots = findPenSpots();
+  findFoalSpots().forEach((spot, i) => {
+    const coats = Object.keys(SETTINGS.coats);
+    const model = buildHorse({ coatName: coats[i % coats.length], foal: true });
+    model.scale.setScalar(SETTINGS.foalSize);
+    model.visible = false;
+    const marker = new THREE.Sprite(new THREE.SpriteMaterial({ map: emojiTexture('🐴'), depthTest: false, fog: false }));
+    const alarm = new THREE.Sprite(new THREE.SpriteMaterial({ map: emojiTexture('❗'), depthTest: false, fog: false }));
+    marker.renderOrder = alarm.renderOrder = 5;
+    marker.scale.setScalar(2.4); alarm.scale.setScalar(2.4);
+    scene.add(marker, alarm);
+    foals.push({ model, marker, alarm, spot, x: spot.x, z: spot.z, heading: 0, speed: 0, step: 0,
+      state: 'wild', scared: 0, place: 0 });
+  });
+}
+
+function resetFoals() {
+  trail = [];
+  const show = game.mode === '2';
+  foals.forEach((f, i) => {
+    Object.assign(f, { x: f.spot.x, z: f.spot.z, heading: i * 1.7, speed: 0, state: 'wild', scared: 0 });
+    f.model.visible = show;
+    f.marker.visible = show;
+    f.alarm.visible = false;
+    placeFoal(f);
+  });
+}
+
+const followers = () => foals.filter(f => f.state === 'follow');
+function nearestWildFoal(maxDistance = Infinity) {
+  let best = null, bestD = maxDistance;
+  for (const f of foals) {
+    if (f.state !== 'wild') continue;
+    const d = dist(f, horsePos());
+    if (d < bestD) { best = f; bestD = d; }
+  }
+  return best;
+}
+
+function calmFoal(f) {
+  f.scared = 0;
+  hearts(f.x, 2.5, f.z, 3);
+  neigh(1.5);
+  message('Das Fohlen ist wieder ruhig. Jetzt E drücken!');
+}
+
+function foalAction() {
+  const f = nearestWildFoal(SETTINGS.catchDistance);
+  if (!f) {
+    const near = nearestWildFoal(25);
+    message(near ? 'Noch etwas näher heran!' : 'Hier ist kein Fohlen. Folge dem Pfeil!');
+    return;
+  }
+  if (f.scared > 0) { message('Das Fohlen ist erschrocken! Gib ihm eine Karotte (F) oder streichle es (G).'); return; }
+  if (Math.abs(game.horse.speed) > SETTINGS.walkSpeed + 0.5) { message('Langsamer! Sonst erschrickt es.'); return; }
+  f.state = 'follow';
+  f.place = followers().length - 1;
+  f.marker.visible = false;
+  hearts(f.x, 2.5, f.z, 2);
+  neigh(1.5);
+  message('Eingefangen! Das Fohlen folgt dir. Bring es zum Stall 🏠', 4);
+}
+
+function updateFoals(dt) {
+  const h = game.horse;
+  // Spur des Pferdes merken: Die Fohlen laufen genau dort hinterher und gehen so nicht durch Häuser
+  const last = trail[trail.length - 1];
+  if (!last || Math.hypot(last.x - h.x, last.z - h.z) > 0.5) {
+    trail.push({ x: h.x, z: h.z });
+    if (trail.length > 400) trail.shift();
+  }
+  const galloping = h.speed > SETTINGS.walkSpeed + 1;
+  for (const f of foals) {
+    const oldX = f.x, oldZ = f.z;
+    if (f.state === 'wild') {
+      const d = dist(f, horsePos());
+      if (galloping && d < SETTINGS.scareDistance && f.scared <= 0) {
+        f.scared = 5;
+        neigh(1.6);
+        message('Huch! Das Fohlen erschrickt und rennt weg. Langsam reiten!');
+      }
+      if (f.scared > 0) {
+        f.scared -= dt * (Math.abs(h.speed) < 0.5 ? 1.6 : 1);   // Stillstehen beruhigt schneller
+        if (f.scared > 2.5) {                                    // weg vom Pferd rennen, Häusern ausweichen
+          const away = Math.atan2(f.x - h.x, f.z - h.z);
+          for (const turn of [0, 0.7, -0.7, 1.4, -1.4, 2.2, -2.2]) {
+            const a = away + turn;
+            const nx = f.x + Math.sin(a) * SETTINGS.foalRunSpeed * dt, nz = f.z + Math.cos(a) * SETTINGS.foalRunSpeed * dt;
+            if (!isBlocked(nx, nz)) { f.x = nx; f.z = nz; f.heading = a; break; }
+          }
+        }
+      } else if (d < 15) {
+        f.heading += (Math.atan2(h.x - f.x, h.z - f.z) - f.heading) * Math.min(1, dt * 2);  // schaut neugierig zum Pferd
+      }
+    } else if (f.state === 'follow') {
+      const back = trail.length - 1 - (f.place + 1) * 7;          // etwa 3.5 m Abstand pro Fohlen
+      const target = trail[Math.max(0, back)];
+      f.x += (target.x - f.x) * Math.min(1, dt * 5);
+      f.z += (target.z - f.z) * Math.min(1, dt * 5);
+    }
+    const moved = Math.hypot(f.x - oldX, f.z - oldZ);
+    if (moved > 0.01 && f.state === 'follow') f.heading = Math.atan2(f.x - oldX, f.z - oldZ);
+    f.speed = moved / Math.max(dt, 0.001);
+    f.step += dt * Math.sqrt(f.speed) * SETTINGS.strideRate;
+    placeFoal(f);
+  }
+  // Am Stall angekommen: Alle Fohlen, die folgen, sind daheim
+  const group = followers();
+  if (group.length && dist(horsePos(), homePos) < SETTINGS.stableRadius) {
+    for (const f of group) {
+      const pen = penSpots[game.foalsHome];
+      Object.assign(f, { state: 'stable', x: pen.x, z: pen.z, heading: Math.random() * 6 });
+      placeFoal(f);
+      game.foalsHome++;
+    }
+    trail = [];
+    confetti(homePos.x, 4, homePos.z, 40 * group.length);
+    jingle();
+    if (game.foalsHome >= foals.length) { endGame(true); return; }
+    message(group.length + (group.length > 1 ? ' Fohlen sind' : ' Fohlen ist') + ' im Stall! Noch ' + (foals.length - game.foalsHome) + '.', 4);
+  }
+}
+
+function placeFoal(f) {
+  f.model.position.set(f.x, Math.abs(Math.sin(f.step)) * Math.min(0.15, f.speed / 40), f.z);
+  f.model.rotation.y = f.heading;
+  // Beine, Mähne und Schweif nur bewegen, wenn das Fohlen läuft (das spart Rechenzeit)
+  if (f.speed > 0.1 || f.wasMoving) animateHorse(f.model, f.step, f.speed, totalTime);
+  f.wasMoving = f.speed > 0.1;
+  const showMarker = f.state === 'wild' && game.mode === '2';
+  f.marker.visible = showMarker && f.scared <= 0;
+  f.alarm.visible = showMarker && f.scared > 0;
+  f.marker.position.set(f.x, 4.2, f.z);
+  f.alarm.position.set(f.x, 4.2, f.z);
+}
+
+// ---------- Sonnenuntergang (Modus 2) ----------
+const DAY = new THREE.Color(SETTINGS.colors.sky), DUSK = new THREE.Color('#f0a36a'), NIGHT = new THREE.Color('#1f2747');
+const DOME_DAY = new THREE.Color('#ffffff'), DOME_DUSK = new THREE.Color('#ffc29a'), DOME_NIGHT = new THREE.Color('#3a4266');
+function sunsetColor(p, day, dusk, night, out) {
+  if (p < 0.55) return out.copy(day);
+  if (p < 0.85) return out.copy(day).lerp(dusk, (p - 0.55) / 0.3);
+  return out.copy(dusk).lerp(night, (p - 0.85) / 0.15);
+}
+function setDaylight(p) {
+  sunsetColor(p, DAY, DUSK, NIGHT, scene.background);
+  scene.fog.color.copy(scene.background);
+  sunsetColor(p, DOME_DAY, DOME_DUSK, DOME_NIGHT, skyDome.material.color);
+  sunsetColor(p, DOME_DAY, DUSK, DOME_NIGHT, sunDisc.material.color);
+  sun.intensity = 0.75 * (1 - 0.7 * p * p);
+  hemi.intensity = 0.62 * (1 - 0.55 * p * p);
+}
+function updateSunset() {
+  if (game.mode === '2' && game.state !== 'start') setDaylight(Math.min(1, 1 - game.timeLeft / game.timeTotal));
+}
+function resetSky() { setDaylight(0); }
+
+// ---------- Pflege: Hunger, Laune, Füttern, Streicheln ----------
+function updateCare(dt) {
+  const h = game.horse;
+  const moving = Math.abs(h.speed) > 0.5, galloping = h.speed > SETTINGS.walkSpeed + 1;
+  game.hunger -= dt * SETTINGS.hungerPerSecond * (moving ? 1 : 0.3) * (galloping ? SETTINGS.gallopHungerFactor : 1);
+  game.mood -= dt * SETTINGS.moodPerSecond;
+  game.hunger = Math.max(0, Math.min(100, game.hunger));
+  game.mood = Math.max(0, Math.min(100, game.mood));
+  if (game.hunger < 25 && !game.warnedHunger) {
+    game.warnedHunger = true;
+    message(game.bag ? 'Dein Pferd hat Hunger! Drück F für eine Karotte.' : 'Dein Pferd hat Hunger! Sammle Karotten 🥕 und drück F.', 4);
+    neigh(0.85);
+  }
+  if (game.hunger > 40) game.warnedHunger = false;
+  if (game.mood < 30 && !game.warnedMood) {
+    game.warnedMood = true;
+    message('Dein Pferd ist traurig und langsam. Halte an und streichle es mit G.', 4);
+  }
+  if (game.mood > 50) game.warnedMood = false;
+}
+
+function feedKey() {
+  if (game.mode === '2') {                              // erschrecktes Fohlen in der Nähe? Dann bekommt es die Karotte
+    const f = nearestWildFoal(9);
+    if (f && f.scared > 0 && game.bag > 0) { game.bag--; chew(); calmFoal(f); return; }
+  }
+  if (game.bag <= 0) { message('Keine Karotten im Rucksack! Sammle die 🥕 unterwegs.'); return; }
+  if (game.hunger >= 97) { message('Dein Pferd ist satt. 😊'); return; }
+  game.bag--;
+  game.hunger = Math.min(100, game.hunger + SETTINGS.carrotFeeds);
+  chew();
+  const h = game.horse;
+  for (let i = 0; i < 6; i++) {
+    spawnSprite(FX.crumb, h.x + Math.sin(h.heading) * 2, 3, h.z + Math.cos(h.heading) * 2,
+      { vx: (Math.random() - 0.5) * 2, vy: 2, vz: (Math.random() - 0.5) * 2, size: 0.35, life: 0.8, gravity: 9 });
+  }
+  message('Mjam! 🥕 Hunger: ' + Math.round(game.hunger) + ' %', 2);
+}
+
+function patKey() {
+  if (game.mode === '2') {
+    const f = nearestWildFoal(7);
+    if (f && f.scared > 0) { calmFoal(f); return; }
+  }
+  const h = game.horse;
+  if (Math.abs(h.speed) > 1) { message('Halte zuerst an, dann kannst du streicheln.'); return; }
+  const before = game.mood;
+  game.mood = Math.min(100, game.mood + SETTINGS.moodPerPat);
+  hearts(h.x, 4.5, h.z, 3);
+  if (game.mood >= 100 && before < 100) neigh(); else beep(700 + Math.random() * 200, 0.12, 0, 'sine', 0.08);
+}
+
+// ---------- Taste E: abholen, abgeben, einfangen ----------
+function actionKey() {
+  if (game.mode === '1') courierAction();
+  else if (game.mode === '2') foalAction();
+  else message('Reite zur OYM-Halle! Der Pfeil zeigt den Weg.');
+}
+
+// ---------- Wohin zeigt der Pfeil? ----------
+function currentTarget() {
+  if (game.mode === '1') {
+    const o = game.order;
+    if (!o) return null;
+    const s = o.carrying ? o.to : o.from;
+    return { x: s.x, z: s.z, name: s.name };
+  }
+  if (game.mode === '2') {
+    if (followers().length) return { x: homePos.x, z: homePos.z, name: '🐴 Stall' };
+    const f = nearestWildFoal();
+    return f ? { x: f.x, z: f.z, name: '🐴 Fohlen' } : null;
+  }
+  return { x: MAP.goal[0], z: MAP.goal[1], name: MAP.goalName };
 }
 
 // ---------- Spiel starten und beenden ----------
-let horseModel, carrots;
+let horseModel, carrots, goalParts;
 
 function startGame() {
   const h = game.horse;
   [h.x, h.z] = MAP.start;
   h.heading = MAP.startHeading;
   h.speed = 0;
-  game.timeLeft = SETTINGS.timeLimitSeconds;
-  game.carrots = 0;
-  game.score = 0;
-  game.state = 'play';
+  Object.assign(game, { state: 'play', carrots: 0, bag: SETTINGS.startCarrots, hunger: 100, mood: 100, score: 0,
+    deliveries: 0, order: null, foalsHome: 0, bumpCooldown: 0, warnedHunger: false, warnedMood: false, lastSecond: null });
+  const m = game.mode;
+  game.timeTotal = m === '1' ? SETTINGS.courierStartSeconds : m === '2' ? SETTINGS.sunsetSeconds : SETTINGS.timeLimitSeconds;
+  game.timeLeft = game.timeTotal;
   carrots.forEach(c => { c.visible = true; });
+  goalParts.oym.forEach(o => { o.visible = m === '3'; });
+  goalParts.home.visible = m !== '2';
+  goalParts.stable.visible = m === '2';
+  courierMarkers.visible = m === '1';
+  horseModel.userData.parcel.visible = false;
+  resetFoals();
+  resetSky();
+  clearParticles();
+  if (m === '1') newOrder();
+  if (m === '2') message('10 Fohlen sind ausgebüxt! Reite langsam heran und drück E. Vor Sonnenuntergang müssen alle im Stall sein.', 6);
+  if (m === '3') message('Reite zur OYM-Halle! Der Pfeil zeigt dir den Weg.', 4);
+  neigh();
   snapCamera();
   showScreens();
 }
 
+function currentScore(won) {
+  let score = game.carrots * SETTINGS.pointsPerCarrot;
+  if (game.mode === '1') score += game.deliveries * SETTINGS.pointsPerDelivery;
+  if (game.mode === '2') score += game.foalsHome * SETTINGS.pointsPerFoal;
+  if (won) score += Math.ceil(game.timeLeft) * SETTINGS.pointsPerSecondLeft;
+  return score;
+}
+
 function endGame(won) {
   game.state = won ? 'won' : 'lost';
-  game.score = game.carrots * SETTINGS.pointsPerCarrot + (won ? Math.ceil(game.timeLeft) * SETTINGS.pointsPerSecondLeft : 0);
-  hud.endTitle.textContent = won ? '🎉 Geschafft!' : '⏰ Zeit um!';
-  hud.endText.textContent = (won ? 'Du bist bei der ' + MAP.goalName + ' angekommen. ' : 'Die OYM-Halle war noch zu weit weg. ') +
-    'Karotten: ' + game.carrots + ' · Punkte: ' + game.score;
-  if (won) [523, 659, 784].forEach((f, i) => setTimeout(() => beep(f, 0.25), i * 150));
+  game.score = currentScore(won);
+  const best = loadBest(game.mode);
+  const record = game.score > best;
+  if (record) saveBest(game.mode, game.score);
+  const m = game.mode;
+  const titles = { '1': ['🎉 Geschafft!', '⏰ Zeit um!'], '2': ['🎉 Alle Fohlen daheim!', '🌙 Zu spät!'], '3': ['🎉 Geschafft!', '⏰ Zeit um!'] };
+  hud.endTitle.textContent = titles[m][won ? 0 : 1];
+  let text;
+  if (m === '1') text = (won ? 'Alle ' + SETTINGS.deliveriesToWin + ' Lieferungen sind angekommen. ' : 'Lieferungen: ' + game.deliveries + ' von ' + SETTINGS.deliveriesToWin + '. ');
+  else if (m === '2') text = (won ? 'Alle Fohlen schlafen sicher im Stall. ' : 'Die Sonne ist weg. Im Stall: ' + game.foalsHome + ' von ' + foals.length + ' Fohlen. ');
+  else text = won ? 'Du bist bei der ' + MAP.goalName + ' angekommen. ' : 'Die OYM-Halle war noch zu weit weg. ';
+  hud.endText.textContent = text + 'Karotten: ' + game.carrots + ' · Punkte: ' + game.score +
+    (record ? ' · 🏆 Neuer Rekord!' : ' · Rekord: ' + best);
+  if (won) { jingle(); confetti(game.horse.x, 5, game.horse.z, 120); setTimeout(neigh, 500); } else sadTune();
+  horseModel.userData.parcel.visible = false;
   showScreens();
 }
 
 function showScreens() {
   hud.start.hidden = game.state !== 'start';
   hud.end.hidden = game.state !== 'won' && game.state !== 'lost';
+  hud.care.hidden = game.state === 'start';
+  hud.list.innerHTML = Object.entries(MODES).map(([key, m]) => {
+    const best = loadBest(key);
+    return '<div class="modus' + (key === game.mode ? ' gewaehlt' : '') + '"><b>' + key + ' · ' + m.emoji + ' ' + m.name + '</b><span>' +
+      m.text + (best ? '<br>🏆 Rekord: ' + best : '') + '</span></div>';
+  }).join('');
   hud.start.querySelector('.start-hinweis').textContent = gameHasFocus() ? 'Drücke Enter zum Starten' : '👆 Zuerst aufs Spielfeld klicken';
 }
 
@@ -2391,17 +3034,42 @@ function updateHorse(dt) {
   const h = game.horse;
   const turn = pressed('arrowleft', 'a') - pressed('arrowright', 'd');
   const forward = pressed('arrowup', 'w'), back = pressed('arrowdown', 's');
+  const sad = game.mood < 30 ? SETTINGS.sadSpeedFactor : 1;
+  const canGallop = game.hunger > 0;
   let target = 0;
-  if (forward) target = pressed(' ') ? SETTINGS.gallopSpeed : SETTINGS.walkSpeed;
+  if (forward) target = (pressed(' ') && canGallop ? SETTINGS.gallopSpeed : SETTINGS.walkSpeed) * sad;
   if (back) target = -SETTINGS.backSpeed;
+  if (forward && pressed(' ') && !canGallop && !game.msgTime) message('Zu hungrig für Galopp! Drück F für eine Karotte.', 2.5);
   h.speed += (target - h.speed) * Math.min(1, dt * SETTINGS.acceleration);
   h.heading += turn * SETTINGS.turnSpeed * dt;
   // Zuerst in x-Richtung, dann in z-Richtung: so rutscht das Pferd an Hauswänden entlang
   const nx = h.x + Math.sin(h.heading) * h.speed * dt;
   const nz = h.z + Math.cos(h.heading) * h.speed * dt;
-  if (!isBlocked(nx, h.z)) h.x = nx; else h.speed *= 0.9;
-  if (!isBlocked(h.x, nz)) h.z = nz; else h.speed *= 0.9;
+  let bumped = false;
+  if (!isBlocked(nx, h.z)) h.x = nx; else { h.speed *= 0.9; bumped = true; }
+  if (!isBlocked(h.x, nz)) h.z = nz; else { h.speed *= 0.9; bumped = true; }
+  game.bumpCooldown -= dt;
+  if (bumped && Math.abs(h.speed) > 4 && game.bumpCooldown <= 0) {   // Zusammenstoss: Laune sinkt
+    game.bumpCooldown = 1.2;
+    game.mood = Math.max(0, game.mood - SETTINGS.moodPerBump);
+    thud();
+  }
+  // Hufgeräusch bei jedem Schritt, im Galopp doppelt
+  const before = Math.floor(h.step / Math.PI);
   h.step += dt * Math.sqrt(Math.abs(h.speed)) * SETTINGS.strideRate;   // im Galopp längere Sprünge statt nur schnellere Beine
+  if (Math.floor(h.step / Math.PI) !== before && Math.abs(h.speed) > 0.5) {
+    clop();
+    if (h.speed > SETTINGS.walkSpeed + 1) clop(0.07);
+  }
+  // Staubwolke im Galopp
+  if (SETTINGS.dust && h.speed > SETTINGS.walkSpeed + 2) {
+    game.dust = (game.dust || 0) + dt * 30;
+    for (; game.dust >= 1; game.dust--) {
+      spawnSprite(FX.dust, h.x - Math.sin(h.heading) * 1.3 + (Math.random() - 0.5), 0.4,
+        h.z - Math.cos(h.heading) * 1.3 + (Math.random() - 0.5),
+        { vx: (Math.random() - 0.5) * 1.5, vy: 0.6 + Math.random(), vz: (Math.random() - 0.5) * 1.5, size: 1, grow: 2.2, life: 0.9 });
+    }
+  }
 }
 
 function updateCarrots(t) {
@@ -2412,6 +3080,7 @@ function updateCarrots(t) {
     if (Math.hypot(c.position.x - game.horse.x, c.position.z - game.horse.z) < SETTINGS.pickupDistance) {
       c.visible = false;
       game.carrots++;
+      game.bag++;
       beep(880, 0.15);
     }
   });
@@ -2452,19 +3121,48 @@ function updateCamera(dt) {
   camera.lookAt(cameraLook);
 }
 
-// ---------- Anzeige oben: Zeit, Punkte, Pfeil zum Ziel ----------
-function updateHud() {
+// ---------- Anzeigen: Zeit, Punkte, Pfeil, Auftrag, Hunger und Laune ----------
+function updateHud(t) {
   const h = game.horse;
   const sec = Math.max(0, Math.ceil(game.timeLeft));
   const clock = Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0');
   const pace = h.speed > SETTINGS.walkSpeed + 1 ? '   💨 Galopp!' : '';
-  hud.bar.textContent = '⏱️ ' + clock + '   🥕 ' + game.carrots + '   ⭐ ' + game.carrots * SETTINGS.pointsPerCarrot + pace;
-  hud.bar.classList.toggle('knapp', sec <= 30);
-  const dx = MAP.goal[0] - h.x, dz = MAP.goal[1] - h.z;
-  const dist = Math.hypot(dx, dz);
-  const angle = Math.atan2(dx, dz) - h.heading;            // wohin, von der Reitrichtung aus gesehen
-  hud.arrow.style.transform = 'rotate(' + (-angle) + 'rad)';
-  hud.goal.textContent = MAP.goalName + ': ' + (dist > 1000 ? (dist / 1000).toFixed(1) + ' km' : Math.round(dist) + ' m');
+  let progress = '';
+  if (game.mode === '1') progress = '   📦 ' + game.deliveries + '/' + SETTINGS.deliveriesToWin;
+  if (game.mode === '2') progress = '   🐴 ' + game.foalsHome + '/' + foals.length;
+  hud.bar.textContent = (game.mode === '2' ? '🌅 ' : '⏱️ ') + clock + progress + '   🥕 ' + game.bag + '   ⭐ ' + currentScore(false) + pace;
+  hud.bar.classList.toggle('knapp', sec <= 30 && game.state === 'play');
+
+  const target = currentTarget();
+  hud.goal.parentElement.hidden = !target;
+  targetBeam.visible = !!target && game.mode !== '3' && game.state === 'play' && !(game.mode === '2' && !followers().length);
+  if (target) {
+    const dx = target.x - h.x, dz = target.z - h.z;
+    const d = Math.hypot(dx, dz);
+    const angle = Math.atan2(dx, dz) - h.heading;          // wohin, von der Reitrichtung aus gesehen
+    hud.arrow.style.transform = 'rotate(' + (-angle) + 'rad)';
+    hud.goal.textContent = target.name + ': ' + (d > 1000 ? (d / 1000).toFixed(1) + ' km' : Math.round(d) + ' m');
+    targetBeam.position.set(target.x, 40, target.z);
+    targetBeam.material.opacity = 0.3 + Math.sin(t * 4) * 0.12;
+  }
+
+  let order = '';
+  if (game.state === 'play' && game.mode === '1' && game.order) {
+    const o = game.order;
+    order = o.carrying ? o.item + ' → ' + o.to.name + ' (E zum Abgeben)' : 'Abholen: ' + o.item + ' bei ' + o.from.name;
+  }
+  if (game.state === 'play' && game.mode === '2') {
+    const n = followers().length;
+    order = n ? '🐴 ' + n + (n > 1 ? ' Fohlen folgen' : ' Fohlen folgt') + ' dir. Ab zum Stall!' : 'Suche die Fohlen 🐴 (E zum Einfangen)';
+  }
+  hud.order.textContent = order;
+
+  hud.hungerBar.style.width = game.hunger + '%';
+  hud.moodBar.style.width = game.mood + '%';
+  hud.hungerBar.parentElement.classList.toggle('leer', game.hunger < 25);
+  hud.moodBar.parentElement.classList.toggle('leer', game.mood < 30);
+  hud.hungerText.textContent = game.hunger <= 0 ? 'Hunger! (F)' : game.hunger < 25 ? 'hungrig' : 'satt';
+  hud.moodText.textContent = game.mood < 30 ? 'traurig (G)' : game.mood < 70 ? 'okay' : 'fröhlich';
   drawMinimap();
 }
 
@@ -2477,18 +3175,27 @@ function loop(now) {
   if (game.state === 'play') {
     updateHorse(dt);
     updateCarrots(totalTime);
+    updateCare(dt);
+    if (game.mode === '2') updateFoals(dt);
     game.timeLeft -= dt;
-    if (reachedGoal()) endGame(true);
+    const second = Math.ceil(game.timeLeft);
+    if (second !== game.lastSecond && second <= 20 && second > 0) tick();   // Zeit wird knapp
+    game.lastSecond = second;
+    if (game.state !== 'play') { /* schon beendet, z.B. letztes Fohlen im Stall */ }
+    else if (game.mode === '3' && reachedGoal()) endGame(true);
     else if (game.timeLeft <= 0) endGame(false);
   } else if (game.state === 'start') {
     game.horse.heading += dt * 0.3;                         // langsam ums Pferd herumfliegen
   }
+  if (game.msgTime > 0) { game.msgTime -= dt; if (game.msgTime <= 0) hud.msg.hidden = true; }
   placeHorseModel();
   updateCamera(dt);
   updateSky(totalTime);
+  updateSunset();
   updateWater(totalTime);
   updateGrass();
-  updateHud();
+  updateParticles(dt);
+  updateHud(totalTime);
   renderer.render(scene, camera);
   requestAnimationFrame(loop);
 }
@@ -2503,7 +3210,10 @@ buildHouses();
 buildTrees();
 buildFences();
 buildGrass();
-buildGoal();
+goalParts = buildGoal();
+goalParts.stable.visible = false;
+buildShops();
+buildFoals();
 drawMinimapBase();
 horseModel = buildHorse();
 carrots = buildCarrots();
@@ -2512,6 +3222,7 @@ game.horse.heading = MAP.startHeading;
 snapCamera();
 showScreens();
 window.__game = game; // für den Roboter-Tester
+window.__test = { foals, SHOPS, startGame, actionKey, feedKey, patKey, currentTarget, homePos };
 requestAnimationFrame(loop);
 </script>
 </body>

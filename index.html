@@ -113,6 +113,22 @@
   .hinweis { margin: 18px 0 0; padding: 14px 18px; background: #e8f2fc; border: 3px solid #b6d6f5; border-radius: 16px; }
   .hinweis p { margin: 4px 0; }
 
+  /* ---- Phasen im Detail ---- */
+  .detail { margin: 12px 0 0; background: #fff; border: 3px solid var(--linie); border-left: 10px solid var(--farbe, var(--blau)); border-radius: 14px; overflow: hidden; }
+  .detail summary { cursor: pointer; padding: 12px 16px; font-weight: 800; font-size: 1.1rem; list-style: none; display: flex; gap: 10px; align-items: center; }
+  .detail summary::-webkit-details-marker { display: none; }
+  .detail summary::after { content: "▾"; margin-left: auto; color: #6b7390; }
+  .detail[open] summary::after { content: "▴"; }
+  .detail summary small { font-weight: 400; color: #55607f; }
+  .detail summary:focus-visible { outline: 3px solid var(--blau); outline-offset: -3px; }
+  .detail-inhalt { display: grid; grid-template-columns: 150px 1fr; gap: 8px 16px; padding: 4px 18px 16px; margin: 0; }
+  .detail-inhalt dt { font-weight: 800; color: var(--farbe, var(--blau-dunkel)); }
+  .detail-inhalt dd { margin: 0; }
+  .detail-inhalt ul { margin: 0; padding-left: 20px; }
+  @media (max-width: 560px) { .detail-inhalt { grid-template-columns: 1fr; gap: 2px; } .detail-inhalt dd { margin-bottom: 8px; } }
+  .rueckwaerts { margin: 14px 0 0; padding: 14px 18px; background: #fff3c4; border: 3px dashed #e0a800; border-radius: 16px; }
+  .rueckwaerts p { margin: 4px 0; }
+
   /* ---- Gut zu wissen ---- */
   .zwei { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
   .code { display: block; margin-top: 8px; padding: 6px 10px; border-radius: 8px; background: #25304a; color: #cfe8ff; font-family: ui-monospace, monospace; font-size: .9rem; overflow-x: auto; }
@@ -300,6 +316,84 @@
     <p><strong>Was kommt zuerst?</strong> Zuerst die Idee, dann der Plan, dann das Design. Erst danach wird gebaut. Ein Haus ohne Bauplan wird schief.</p>
     <p><strong>Wie gross anfangen?</strong> Klein. Eine Version, die man schon spielen kann, ist besser als ein riesiger Plan, der nie fertig wird. Ausbauen geht später.</p>
     <p><strong>Design-Fragen für das Papier:</strong> Wie sieht das Pferd aus? Welche Farben hat Zug? Wie heissen die Orte? Wo steht die Uhr auf dem Bildschirm?</p>
+  </div>
+
+  <h3 style="margin-top:28px">🔍 Die Phasen genau erklärt</h3>
+  <p class="lead">Tippt auf eine Phase, dann seht ihr, was dort passiert.</p>
+  <details class="detail" style="--farbe:#e0a800">
+    <summary><span>💡</span> 1. Idee <small>Was soll es werden?</small></summary>
+    <dl class="detail-inhalt">
+      <dt>Ziel</dt><dd>Wissen, was entstehen soll und für wen.</dd>
+      <dt>Was wir tun</dt><dd><ul><li>Die Fragen in <code>GAME_IDEA.md</code> beantworten.</li><li>Eine Spielart wählen: Liefern, Einfangen, Rennen, Entdecken.</li><li>Eine verrückte Zutat finden, die das Spiel zu eurem macht.</li><li>Bei uns: Pferde, Zug in der Schweiz, Pakete ausliefern und Fohlen einfangen.</li></ul></dd>
+      <dt>Wer macht was</dt><dd>Ihr. Claude stellt Fragen und macht Vorschläge, ihr entscheidet.</dd>
+      <dt>Das kommt heraus</dt><dd>Ein paar Sätze, die die Idee beschreiben.</dd>
+      <dt>Fertig, wenn</dt><dd>Ihr könnt die Idee in drei Sätzen jemandem erzählen, der das Spiel nicht kennt.</dd>
+    </dl>
+  </details>
+  <details class="detail" style="--farbe:#3bb273">
+    <summary><span>📝</span> 2. Plan <small>In kleine Schritte teilen</small></summary>
+    <dl class="detail-inhalt">
+      <dt>Ziel</dt><dd>Aus der grossen Idee viele kleine, machbare Schritte machen.</dd>
+      <dt>Was wir tun</dt><dd><ul><li>Die Schritte ordnen: erst die Welt, dann das Spiel, dann die Extras.</li><li>Zu jedem Schritt aufschreiben, woran man sieht, dass er fertig ist.</li><li>So planen, dass früh etwas Spielbares da ist.</li><li>Jeder Schritt soll in ein bis drei Minuten baubar sein. Ist er grösser, wird er geteilt.</li></ul></dd>
+      <dt>Wer macht was</dt><dd>Ihr und Claude gemeinsam.</dd>
+      <dt>Das kommt heraus</dt><dd>Der Projektplan: <code>PLAN.md</code> und die Liste weiter unten.</dd>
+      <dt>Fertig, wenn</dt><dd>Jeder Schritt ist klein und hat ein »Fertig, wenn…«.</dd>
+    </dl>
+  </details>
+  <details class="detail" style="--farbe:#e0457f" open>
+    <summary><span>🎨</span> 3. Design <small>Wie sieht es aus und wie fühlt es sich an?</small></summary>
+    <dl class="detail-inhalt">
+      <dt>Ziel</dt><dd>Festlegen, wie das Spiel aussieht und bedient wird, bevor Code entsteht.</dd>
+      <dt>Was wir tun</dt><dd><ul><li>Auf Papier skizzieren: die Karte, das Pferd, den Bildschirm (wo stehen Punkte, Uhr und Herzen?).</li><li>Farben wählen, zum Beispiel Blau und Weiss für Zug.</li><li>Alle Texte auf Deutsch aufschreiben: Titel, Knöpfe, »Geschafft!«.</li><li>Die Tasten festlegen.</li></ul></dd>
+      <dt>Wer macht was</dt><dd>Ihr zeichnet und schreibt. Claude fragt nach, wenn etwas unklar ist, und baut später danach.</dd>
+      <dt>Das kommt heraus</dt><dd>Skizzen, eine Farbliste, eine Textliste.</dd>
+      <dt>Fertig, wenn</dt><dd>Claude kann alles nach euren Unterlagen bauen, ohne zu raten. Wir sind jetzt in dieser Phase.</dd>
+    </dl>
+  </details>
+  <details class="detail" style="--farbe:#ff8c1a">
+    <summary><span>⌨️</span> 4. Bauen <small>Den Code schreiben (Implementieren)</small></summary>
+    <dl class="detail-inhalt">
+      <dt>Ziel</dt><dd>Einen Plan-Schritt in funktionierenden Code verwandeln.</dd>
+      <dt>Was wir tun</dt><dd><ul><li>Immer nur einen Schritt auf einmal bauen.</li><li>Claude schreibt den Code in <code>index.html</code>.</li><li>Zahlen zum Spielen kommen in den <code>SETTINGS</code>-Block, damit ihr sie selbst ändern könnt.</li><li>Der Code bleibt lesbar: klare Namen, kurze Abschnitte, ein Kommentar pro Abschnitt.</li></ul></dd>
+      <dt>Wer macht was</dt><dd>Claude schreibt. Ihr sagt, welcher Schritt dran ist, und bleibt als Ideengeber dabei.</dd>
+      <dt>Das kommt heraus</dt><dd>Eine neue Version von <code>index.html</code>.</dd>
+      <dt>Fertig, wenn</dt><dd>Alles, was bei dem Schritt unter »Fertig, wenn« steht, stimmt.</dd>
+    </dl>
+  </details>
+  <details class="detail" style="--farbe:#8a5bd6">
+    <summary><span>🧪</span> 5. Testen <small>Fehler finden, bevor andere sie sehen</small></summary>
+    <dl class="detail-inhalt">
+      <dt>Ziel</dt><dd>Merken, ob etwas kaputt ist, und ob es Spass macht.</dd>
+      <dt>Was wir tun</dt><dd><ul><li>Der Roboter-Spieler öffnet das Spiel, drückt Tasten und prüft, ob Fehlermeldungen auftauchen.</li><li>Dann spielt ihr selbst: Klappt der Schritt? Ist es zu schwer oder zu leicht? Macht es Spass?</li><li>Einen Fehler melden heisst: sagen, was ihr gesehen habt, was passieren sollte und wann es passiert.</li><li>Fehler (Bugs) sind normal und gehören dazu.</li></ul></dd>
+      <dt>Wer macht was</dt><dd>Zuerst der Roboter, dann ihr.</dd>
+      <dt>Das kommt heraus</dt><dd>Eine kurze Liste: Das ist gut. Das ist kaputt. Das wünschen wir uns.</dd>
+      <dt>Fertig, wenn</dt><dd>Keine Fehlermeldung, der Schritt funktioniert, und ihr sagt »behalten«. Sonst: »mach das rückgängig«.</dd>
+    </dl>
+  </details>
+  <details class="detail" style="--farbe:#2f9e63">
+    <summary><span>🚀</span> 6. Veröffentlichen <small>Ins Internet bringen</small></summary>
+    <dl class="detail-inhalt">
+      <dt>Ziel</dt><dd>Die neue Version für alle sichtbar machen.</dd>
+      <dt>Was wir tun</dt><dd><ul><li>Speicherpunkt anlegen (Commit) und zu GitHub hochladen (Push).</li><li>Zuerst auf einen Probe-Branch, dann nach <code>main</code>.</li><li>Der Roboter von GitHub stellt die Seite ins Internet. Das dauert etwa eine Minute.</li><li>Seite neu laden und prüfen, ob die Änderung da ist.</li></ul></dd>
+      <dt>Wer macht was</dt><dd>Claude. Das Okay für <code>main</code> gebt ihr.</dd>
+      <dt>Das kommt heraus</dt><dd>Die neue Version unter dem Link.</dd>
+      <dt>Fertig, wenn</dt><dd>Die Seite im Internet zeigt die Änderung.</dd>
+    </dl>
+  </details>
+  <details class="detail" style="--farbe:#1b6ec2">
+    <summary><span>🔁</span> 7. Verbessern <small>Ausprobieren lassen und weiterdenken</small></summary>
+    <dl class="detail-inhalt">
+      <dt>Ziel</dt><dd>Aus dem, was Menschen sagen und tun, neue Ideen machen.</dd>
+      <dt>Was wir tun</dt><dd><ul><li>Freunde und Familie spielen lassen.</li><li>Zuschauen, ohne zu erklären. Wo bleiben sie hängen? Wo lachen sie?</li><li>Eine Liste machen und entscheiden, was am meisten Spass bringt.</li><li>Neue Schritte in den Plan schreiben und weiterbauen.</li></ul></dd>
+      <dt>Wer macht was</dt><dd>Alle zusammen.</dd>
+      <dt>Das kommt heraus</dt><dd>Neue Ideenliste und ein erweiterter Plan.</dd>
+      <dt>Fertig, wenn</dt><dd>Nie ganz. Wenn ihr Pause macht, ist das auch fertig genug.</dd>
+    </dl>
+  </details>
+  <div class="rueckwaerts">
+    <p><strong>Nicht alles nur einmal.</strong> Die Phasen 1 bis 3 machen wir am Anfang. Dann wiederholen sich die Phasen 4 bis 7 für jeden Schritt im Projektplan: bauen, testen, veröffentlichen, besser machen.</p>
+    <p><strong>Zurückgehen ist erlaubt.</strong> Wenn beim Testen auffällt, dass etwas nicht zusammenpasst, gehen wir zum Design oder zum Plan zurück. Das ist kein Fehler, sondern gehört zum Arbeiten.</p>
+    <p><strong>Wo steht das im Projektplan?</strong> Etappe A bis E (Schritte 1 bis 18) sind Phase 4 bis 6 für jeweils einen Teil des Spiels. Etappe F sammelt die Ideen für Phase 7.</p>
   </div>
 
   <!-- ============ Ablauf ============ -->

@@ -93,6 +93,24 @@ Eine Karte, die in beiden Modi gebraucht wird:
 
 Unten rechts zeigt eine kleine Übersichtskarte, wo du bist.
 
+## Arbeitsprozess: die Phasen
+
+Jede App entsteht in denselben sieben Phasen. Phase 1 bis 3 machen wir am Anfang. Phase 4 bis 7 wiederholen sich für jeden Schritt unten.
+
+| # | Phase | Was passiert | Wer | Das kommt heraus | Fertig, wenn... |
+|---|---|---|---|---|---|
+| 1 | **Idee** | Fragen in `GAME_IDEA.md` beantworten, Spielart und eine verrückte Zutat wählen | Ihr | Ein paar Sätze | Ihr erklärt die Idee in drei Sätzen |
+| 2 | **Plan** | Idee in kleine Schritte teilen, pro Schritt ein »Fertig, wenn...« | Ihr und Claude | Dieser Plan | Jeder Schritt ist klein und prüfbar |
+| 3 | **Design** | Skizzen auf Papier (Karte, Pferd, Bildschirm), Farben, deutsche Texte, Tasten | Ihr zeichnet, Claude fragt nach | Skizzen, Farbliste, Textliste | Claude kann danach bauen, ohne zu raten |
+| 4 | **Bauen** | Ein Schritt nach dem anderen in `index.html` umsetzen | Claude | Neue Version von `index.html` | Das »Fertig, wenn...« des Schritts stimmt |
+| 5 | **Testen** | Roboter-Spieler prüft auf Fehler, dann spielt ihr | Roboter, dann ihr | Liste: gut, kaputt, Wünsche | Keine Fehler, ihr sagt »behalten« |
+| 6 | **Veröffentlichen** | Commit, Push, nach `main`, GitHub stellt die Seite online | Claude, ihr gebt das Okay | Neue Version unter dem Link | Die Seite online zeigt die Änderung |
+| 7 | **Verbessern** | Freunde spielen lassen, beobachten, neue Ideen sammeln | Alle | Neue Ideenliste, erweiterter Plan | Nie ganz. Pause ist auch fertig genug |
+
+**Zurückgehen ist erlaubt.** Fällt beim Testen auf, dass etwas nicht zusammenpasst, gehen wir zum Design oder zum Plan zurück.
+
+**Wo wir stehen:** Idee und Plan sind fertig. Wir sind in Phase 3, dem Design. Danach beginnt Phase 4 mit Schritt 1.
+
 ## Die Schritte
 
 Jeder Schritt ist **eine Änderung und ein Commit**. Nach jedem Schritt laden wir die Seite neu und spielen kurz. Wenn es nicht passt, machen wir den Schritt rückgängig.

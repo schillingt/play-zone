@@ -93,6 +93,65 @@
   canvas:focus { outline: 3px solid #ffd54a; }
   .spielbox p { margin: 10px 0 0; }
 
+  /* ---- Navigation ---- */
+  .nav { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; padding: 14px 16px 0; max-width: 1000px; margin: 0 auto; }
+  .nav a { padding: 6px 12px; border-radius: 99px; background: #fff; border: 2px solid var(--linie); color: var(--blau-dunkel); font-weight: 700; text-decoration: none; font-size: .95rem; }
+  .nav a:hover, .nav a:focus-visible { border-color: var(--blau); }
+
+  /* ---- Phasen: von der Idee zur App ---- */
+  .phasen { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px; counter-reset: phase; }
+  .phase { position: relative; background: #fff; border: 3px solid var(--linie); border-radius: 16px; padding: 14px 14px 12px; }
+  .phase .gross { font-size: 2rem; display: block; }
+  .phase h3 { margin: 2px 0 4px; font-size: 1.1rem; }
+  .phase h3::before { counter-increment: phase; content: counter(phase) ". "; color: var(--blau); }
+  .phase p { margin: 0; font-size: .95rem; }
+  .phase .status { display: inline-block; margin-top: 8px; padding: 2px 10px; border-radius: 99px; font-size: .82rem; font-weight: 700; background: #eef0f6; color: #55607f; }
+  .phase.fertig-phase { background: #eaf8ef; border-color: #3bb273; }
+  .phase.fertig-phase .status { background: #3bb273; color: #fff; }
+  .phase.hier { background: #fff6cf; border-color: #e0a800; box-shadow: 0 0 0 4px #ffe58a; }
+  .phase.hier .status { background: #e0a800; color: #fff; }
+  .hinweis { margin: 18px 0 0; padding: 14px 18px; background: #e8f2fc; border: 3px solid #b6d6f5; border-radius: 16px; }
+  .hinweis p { margin: 4px 0; }
+
+  /* ---- Gut zu wissen ---- */
+  .zwei { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+  .code { display: block; margin-top: 8px; padding: 6px 10px; border-radius: 8px; background: #25304a; color: #cfe8ff; font-family: ui-monospace, monospace; font-size: .9rem; overflow-x: auto; }
+  .tabelle { width: 100%; border-collapse: separate; border-spacing: 0; background: #fff; border: 3px solid var(--linie); border-radius: 14px; overflow: hidden; }
+  .tabelle th, .tabelle td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--linie); vertical-align: top; }
+  .tabelle tr:last-child td { border-bottom: 0; }
+  .tabelle th { background: #f4efe2; }
+  .tabelle td:first-child { font-family: ui-monospace, monospace; font-size: .92rem; overflow-wrap: anywhere; }
+  .schlecht { color: #b3261e; }
+  .gut { color: #1d7a45; }
+  .tabelle td.text-zelle { font-family: inherit; font-size: inherit; white-space: normal; }
+
+  /* ---- Weg ins Internet ---- */
+  .pipe { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; }
+  .pipe li { position: relative; display: flex; gap: 14px; align-items: flex-start; background: #fff; border: 3px solid var(--linie); border-radius: 14px; padding: 10px 14px; margin-bottom: 26px; }
+  .pipe li:last-child { margin-bottom: 0; }
+  .pipe li:not(:last-child)::after { content: "⬇️"; position: absolute; left: 22px; bottom: -28px; font-size: 1.3rem; }
+  .pipe .gross { font-size: 1.9rem; flex: none; width: 44px; text-align: center; }
+  .pipe b { display: block; }
+  .pipe span.klein { font-size: .93rem; color: #55607f; }
+  .pipe li.github { border-color: #25304a; background: #f3f4f8; }
+
+  /* ---- Spielschleife ---- */
+  .schleife { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+  .schleife div { background: #fff; border: 3px solid var(--linie); border-radius: 14px; padding: 10px; text-align: center; animation: leuchten 4s infinite; }
+  .schleife div:nth-child(2) { animation-delay: 1s; }
+  .schleife div:nth-child(3) { animation-delay: 2s; }
+  .schleife div:nth-child(4) { animation-delay: 3s; }
+  .schleife .gross { font-size: 1.8rem; display: block; }
+  @keyframes leuchten { 0%, 24% { background: #fff3c4; border-color: #e0a800; } 25%, 100% { background: #fff; border-color: var(--linie); } }
+  @media (prefers-reduced-motion: reduce) { .schleife div { animation: none; } }
+
+  /* ---- Wörterbuch ---- */
+  .woerter { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 10px; }
+  .wort { background: #fff; border: 2px solid var(--linie); border-radius: 12px; padding: 8px 12px; }
+  .wort b { display: block; color: var(--blau-dunkel); }
+  .regeln { margin: 0; padding: 4px 20px 4px 44px; background: #fff; border: 3px solid #f0b8b5; border-radius: 16px; }
+  .regeln li { padding: 5px 0; }
+
   footer { text-align: center; color: #6b7390; padding: 16px; }
 </style>
 </head>
@@ -105,10 +164,21 @@
   <span class="badge">✅ Plan fertig · Spiel kommt gleich</span>
 </header>
 
+<nav class="nav" aria-label="Inhalt">
+  <a href="#idee">Idee</a>
+  <a href="#karte">Karte</a>
+  <a href="#steuerung">Steuerung</a>
+  <a href="#phasen">Von der Idee zur App</a>
+  <a href="#plan">Projektplan</a>
+  <a href="#wissen">Gut zu wissen</a>
+  <a href="#woerter">Wörterbuch</a>
+  <a href="#spiel">Spiel</a>
+</nav>
+
 <main>
 
   <!-- ============ Die Idee ============ -->
-  <h2>💡 Die Idee</h2>
+  <h2 id="idee">💡 Die Idee</h2>
   <p class="lead">Du bist Kurier auf einem Pferd. Zug ist deine Karte, von oben gesehen. Das Pferd braucht Futter und Streicheleinheiten.</p>
   <div class="karten">
     <div class="karte kurier">
@@ -132,7 +202,7 @@
   </div>
 
   <!-- ============ Karte ============ -->
-  <h2>🗺️ Die Karte von Zug</h2>
+  <h2 id="karte">🗺️ Die Karte von Zug</h2>
   <p class="lead">So ungefähr sieht die Spielwelt aus. Die echte Karte zeichnen wir in Schritt 2.</p>
   <div class="karte-zug">
     <svg viewBox="0 0 640 400" role="img" aria-label="Schematische Karte von Zug mit See, Altstadt, Zytturm, Bahnhof, Zugerberg und Stall">
@@ -203,7 +273,7 @@
   </div>
 
   <!-- ============ Steuerung ============ -->
-  <h2>⌨️ Steuerung</h2>
+  <h2 id="steuerung">⌨️ Steuerung</h2>
   <p class="lead">Nur Tastatur.</p>
   <div class="tasten">
     <div class="taste-zeile"><span class="taste-gruppe"><span class="taste">W</span><span class="taste">A</span><span class="taste">S</span><span class="taste">D</span></span><span>oder Pfeile: Reiten</span></div>
@@ -214,8 +284,26 @@
     <div class="taste-zeile"><span class="taste">Enter</span><span>Starten</span><span class="taste">R</span><span>Neustart</span></div>
   </div>
 
+  <!-- ============ Von der Idee zur App ============ -->
+  <h2 id="phasen">🧭 Von der Idee zur App</h2>
+  <p class="lead">Jede App entsteht in denselben Phasen, ob Spiel, Handy-App oder Webseite. Wir gehen sie der Reihe nach durch.</p>
+  <ol class="phasen">
+    <li class="phase fertig-phase"><span class="gross">💡</span><h3>Idee</h3><p>Was soll es werden? Wer spielt es? Was ist das Ziel?</p><span class="status">✅ Grobe Idee steht</span></li>
+    <li class="phase fertig-phase"><span class="gross">📝</span><h3>Plan</h3><p>Die Idee in kleine Schritte teilen. Das ist der Projektplan weiter unten.</p><span class="status">✅ Fertig</span></li>
+    <li class="phase hier"><span class="gross">🎨</span><h3>Design</h3><p>Wie sieht es aus? Skizziert auf Papier: Karte, Pferd, Farben, Texte.</p><span class="status">📍 Hier sind wir</span></li>
+    <li class="phase"><span class="gross">⌨️</span><h3>Bauen</h3><p>Claude schreibt den Code. Ein Schritt, ein Speicherpunkt.</p><span class="status">⏳ Kommt als Nächstes</span></li>
+    <li class="phase"><span class="gross">🧪</span><h3>Testen</h3><p>Spielen und Fehler (Bugs) suchen. Ein Roboter-Spieler hilft: Er drückt Tasten und prüft, ob etwas kaputtgeht.</p><span class="status">⏳ Nach jedem Schritt</span></li>
+    <li class="phase"><span class="gross">🚀</span><h3>Veröffentlichen</h3><p>Auf GitHub speichern und ins Internet stellen. Dann kann jede Person mit dem Link spielen.</p><span class="status">⏳ Nach jedem Schritt</span></li>
+    <li class="phase"><span class="gross">🔁</span><h3>Verbessern</h3><p>Freunde spielen lassen, Ideen sammeln, neue Schritte planen. Dann geht es wieder bei Phase 1 los.</p><span class="status">♾️ Immer wieder</span></li>
+  </ol>
+  <div class="hinweis">
+    <p><strong>Was kommt zuerst?</strong> Zuerst die Idee, dann der Plan, dann das Design. Erst danach wird gebaut. Ein Haus ohne Bauplan wird schief.</p>
+    <p><strong>Wie gross anfangen?</strong> Klein. Eine Version, die man schon spielen kann, ist besser als ein riesiger Plan, der nie fertig wird. Ausbauen geht später.</p>
+    <p><strong>Design-Fragen für das Papier:</strong> Wie sieht das Pferd aus? Welche Farben hat Zug? Wie heissen die Orte? Wo steht die Uhr auf dem Bildschirm?</p>
+  </div>
+
   <!-- ============ Ablauf ============ -->
-  <h2>🔁 So arbeiten wir</h2>
+  <h2>🔁 So arbeiten wir beim Bauen</h2>
   <p class="lead">Immer nur eine Änderung auf einmal. Dann sehen wir genau, was sie bewirkt.</p>
   <div class="ablauf">
     <div class="ablauf-schritt"><b>1️⃣ 💭</b>Ihr sucht euch <strong>eine</strong> Änderung aus.</div>
@@ -225,7 +313,7 @@
   </div>
 
   <!-- ============ Projektplan ============ -->
-  <h2>🚩 Der Projektplan</h2>
+  <h2 id="plan">🚩 Der Projektplan</h2>
   <p class="lead">18 Schritte in 5 Etappen. Tippt auf einen Schritt, wenn er fertig ist. Dann wird er grün.</p>
 
   <div class="fortschritt">
@@ -250,8 +338,131 @@
     <li>Allein spielen oder zu zweit?</li>
   </ol>
 
+  <!-- ============ Gut zu wissen ============ -->
+  <h2 id="wissen">🧠 Gut zu wissen</h2>
+
+  <h3>🧱 Woraus besteht eine Webseite?</h3>
+  <p class="lead">Dein Browser (Chrome, Safari, Firefox...) liest eine Datei und zeigt sie an. Bei uns ist alles in einer einzigen Datei: <code>index.html</code>. Darin stecken drei Teile.</p>
+  <div class="karten">
+    <div class="karte">
+      <div class="gross">🦴</div><h3>HTML: das Skelett</h3>
+      <p>Sagt, was auf der Seite ist: Überschrift, Text, Spielfeld.</p>
+      <code class="code">&lt;h1&gt;Pferde-Kurier Zug&lt;/h1&gt;</code>
+    </div>
+    <div class="karte">
+      <div class="gross">👕</div><h3>CSS: die Kleider</h3>
+      <p>Bestimmt, wie es aussieht: Farben, Grösse, Abstände.</p>
+      <code class="code">h1 { color: blue; }</code>
+    </div>
+    <div class="karte">
+      <div class="gross">🧠</div><h3>JavaScript: das Gehirn</h3>
+      <p>Macht, dass etwas passiert: Das Pferd reitet, die Uhr läuft, Punkte zählen.</p>
+      <code class="code">speed: 320,</code>
+    </div>
+  </div>
+  <p class="lead" style="margin-top:14px">Das Spiel malt JavaScript auf eine leere Zeichenfläche, den <strong>Canvas</strong>. Die Figuren sind Emojis, das spart das Zeichnen.</p>
+
+  <h3>🔄 Was macht ein Spiel 60-mal pro Sekunde?</h3>
+  <p class="lead">Jedes Spiel wiederholt dieselben vier Dinge. Man nennt das die <strong>Spielschleife</strong>. Weil sie so schnell läuft, sieht es aus, als würde sich alles bewegen.</p>
+  <div class="schleife">
+    <div><span class="gross">⌨️</span><b>1. Tasten lesen</b><br>Was drückt der Spieler?</div>
+    <div><span class="gross">🏇</span><b>2. Bewegen</b><br>Pferd und Enten rücken weiter.</div>
+    <div><span class="gross">💥</span><b>3. Prüfen</b><br>Gegen etwas gerannt? Paket abgegeben?</div>
+    <div><span class="gross">🎨</span><b>4. Zeichnen</b><br>Alles neu auf den Bildschirm malen.</div>
+  </div>
+  <p class="lead" style="margin-top:14px">Gut zu wissen: Auf dem Bildschirm zählt <code>x</code> nach rechts und <code>y</code> nach <strong>unten</strong>. Oben links ist 0, 0. Das ist anders als im Mathe-Heft.</p>
+
+  <h3>🐙 Was ist GitHub?</h3>
+  <p class="lead">GitHub ist ein Online-Speicher für Programme. Er funktioniert wie ein Ordner im Internet, der sich <strong>jede Version merkt</strong>. Deshalb können wir jede Änderung zurücknehmen.</p>
+  <div class="karten">
+    <div class="karte"><div class="gross">📁</div><h3>Repository (Repo)</h3><p>Der Projektordner. Unser Repo heisst <code>play-zone</code> und enthält alle Dateien.</p></div>
+    <div class="karte"><div class="gross">💾</div><h3>Commit</h3><p>Ein Speicherpunkt mit Namen, wie ein Spielstand. Jede Änderung bekommt einen eigenen. Dort steht auch, wann und was geändert wurde.</p></div>
+    <div class="karte"><div class="gross">🌿</div><h3>Branch und main</h3><p><code>main</code> ist die offizielle Version. Ein Branch ist eine Kopie zum Ausprobieren. Was dort passiert, stört <code>main</code> nicht.</p></div>
+    <div class="karte"><div class="gross">⬆️</div><h3>Push</h3><p>Speicherpunkte vom Laptop zu GitHub hochladen.</p></div>
+    <div class="karte"><div class="gross">🤝</div><h3>Pull Request</h3><p>Ein Vorschlag: »Bitte übernehmt meine Änderung in <code>main</code>.« Jemand schaut sie an und sagt Ja oder Nein.</p></div>
+    <div class="karte"><div class="gross">🤖</div><h3>Actions und Pages</h3><p><em>Actions</em> sind Roboter, die Aufgaben von allein erledigen. <em>Pages</em> stellt Webseiten gratis ins Internet. Zusammen veröffentlichen sie unser Spiel.</p></div>
+  </div>
+  <p class="lead" style="margin-top:14px">Warum nicht einfach Dateien per Mail schicken? Weil GitHub Versionen merkt, mehrere Leute zusammenarbeiten können und das Veröffentlichen automatisch klappt.</p>
+
+  <h3>🌍 Vom Laptop ins Internet</h3>
+  <p class="lead">So kommt jede Änderung zu den Spielerinnen und Spielern:</p>
+  <ol class="pipe">
+    <li><span class="gross">💻</span><div><b>Claude ändert die Datei</b><span class="klein">Auf dem Rechner wird <code>index.html</code> angepasst und getestet.</span></div></li>
+    <li><span class="gross">💾</span><div><b>Commit</b><span class="klein">Die Änderung wird als Speicherpunkt mit Namen gesichert, zum Beispiel »Pferd kann galoppieren«.</span></div></li>
+    <li><span class="gross">⬆️</span><div><b>Push</b><span class="klein">Der Speicherpunkt wandert zu GitHub.</span></div></li>
+    <li class="github"><span class="gross">🐙</span><div><b>GitHub, Branch <code>main</code></b><span class="klein">Hier liegt die offizielle Version. Neue Änderungen kommen erst auf einen Probe-Branch und dann nach <code>main</code>.</span></div></li>
+    <li><span class="gross">🤖</span><div><b>GitHub Actions</b><span class="klein">Der Roboter bemerkt: neue Version auf <code>main</code>. Er liest die Anleitung <code>.github/workflows/pages.yml</code> und startet die Veröffentlichung.</span></div></li>
+    <li><span class="gross">🌐</span><div><b>GitHub Pages</b><span class="klein">Die Datei wird ins Internet gestellt. Das dauert etwa eine Minute.</span></div></li>
+    <li><span class="gross">📱</span><div><b>Browser</b><span class="klein">Jede Person mit dem Link kann spielen. Danach Seite neu laden, um die neue Version zu sehen.</span></div></li>
+  </ol>
+
+  <h3>📂 Die Dateien im Projekt</h3>
+  <p class="lead">Auf GitHub seht ihr diese Dateien, wenn ihr das Repo öffnet.</p>
+  <table class="tabelle">
+    <tr><th>Datei</th><th>Wofür</th></tr>
+    <tr><td>index.html</td><td class="text-zelle">Das Spiel und diese Seite.</td></tr>
+    <tr><td>PLAN.md</td><td class="text-zelle">Der Plan als Text. <code>.md</code> heisst Markdown: einfacher Text mit Überschriften.</td></tr>
+    <tr><td>GAME_IDEA.md</td><td class="text-zelle">Der Fragebogen für die Spielidee.</td></tr>
+    <tr><td>GAME_DAY.md</td><td class="text-zelle">Die Anleitung für den Bautag.</td></tr>
+    <tr><td>README.md</td><td class="text-zelle">Die Titelseite des Projekts auf GitHub.</td></tr>
+    <tr><td>CLAUDE.md</td><td class="text-zelle">Regeln für Claude, zum Beispiel »alles in einer Datei« und »kinderfreundlich«.</td></tr>
+    <tr><td>.github/workflows/pages.yml</td><td class="text-zelle">Die Anleitung für den Veröffentlichungs-Roboter.</td></tr>
+    <tr><td>.claude/skills/unslop/SKILL.md</td><td class="text-zelle">Eine Zusatz-Fähigkeit für Claude: Texte kürzen und klarer machen.</td></tr>
+  </table>
+
+  <h3>🤖 So arbeitet ihr mit Claude</h3>
+  <p class="lead">Claude ist eine KI, ein Computerprogramm, das Text und Code schreibt. Es versteht eure Worte, aber nicht eure Gedanken. Je genauer ihr sagt, was ihr seht und wollt, desto besser wird das Ergebnis. Claude kann sich irren, deshalb testen wir nach jedem Schritt.</p>
+  <div class="zwei">
+    <div class="karte"><h3>🧒 Ihr macht</h3><p>Ideen, Design, Namen, Entscheidungen. Ihr spielt, testet und sagt, was gut und was blöd ist.</p></div>
+    <div class="karte"><h3>🤖 Claude macht</h3><p>Code schreiben, mit dem Roboter-Spieler testen, speichern und veröffentlichen.</p></div>
+  </div>
+  <table class="tabelle" style="margin-top:14px">
+    <tr><th>Eher schlecht</th><th>Besser</th></tr>
+    <tr><td class="text-zelle schlecht">»Mach es besser.«</td><td class="text-zelle gut">»Mach die Enten doppelt so schnell.«</td></tr>
+    <tr><td class="text-zelle schlecht">»Mehr Action!«</td><td class="text-zelle gut">»Nach 3 Lieferungen kommt ein Regenschauer und die Pfützen werden grösser.«</td></tr>
+    <tr><td class="text-zelle schlecht">»Es geht nicht.«</td><td class="text-zelle gut">»Wenn ich beim Bahnhof E drücke, passiert nichts.«</td></tr>
+    <tr><td class="text-zelle schlecht">Fünf Wünsche in einem Satz</td><td class="text-zelle gut">Ein Wunsch, ausprobieren, dann der nächste.</td></tr>
+  </table>
+
+  <h3>🔒 Regeln für das Internet</h3>
+  <ul class="regeln">
+    <li><strong>Das Spiel ist öffentlich.</strong> Wer den Link hat, kann es sehen und spielen.</li>
+    <li>Keine echten Namen, Adressen, Telefonnummern oder Fotos von Personen im Spiel oder in den Dateien.</li>
+    <li>Passwörter und das GitHub-Konto bleiben bei den Erwachsenen.</li>
+    <li>Keine fremden Bilder, Lieder oder Figuren einfach kopieren. Emojis, selbst Gezeichnetes und selbst Gemachtes sind in Ordnung.</li>
+    <li>Nur Cartoon-Spass: freundlich, ohne Beleidigungen.</li>
+    <li>Fehler sind normal. Jeder Speicherpunkt lässt sich zurücknehmen.</li>
+  </ul>
+
+  <!-- ============ Woerterbuch ============ -->
+  <h2 id="woerter">📖 Wörterbuch</h2>
+  <div class="woerter">
+    <div class="wort"><b>Branch</b>Kopie des Projekts zum Ausprobieren.</div>
+    <div class="wort"><b>Browser</b>Programm, das Webseiten anzeigt, zum Beispiel Chrome oder Safari.</div>
+    <div class="wort"><b>Bug</b>Fehler im Code. Das Spiel macht etwas, das nicht gewollt war.</div>
+    <div class="wort"><b>Canvas</b>Leere Zeichenfläche, auf die JavaScript das Spiel malt.</div>
+    <div class="wort"><b>Code</b>Anweisungen, die der Computer Schritt für Schritt befolgt.</div>
+    <div class="wort"><b>Commit</b>Speicherpunkt mit Namen.</div>
+    <div class="wort"><b>CSS</b>Sagt der Seite, wie sie aussieht.</div>
+    <div class="wort"><b>Deploy</b>Eine neue Version ins Internet stellen.</div>
+    <div class="wort"><b>GitHub</b>Online-Speicher für Programme, der jede Version merkt.</div>
+    <div class="wort"><b>HTML</b>Sagt der Seite, was darauf steht.</div>
+    <div class="wort"><b>JavaScript</b>Programmiersprache der Webseiten. Macht Spiele möglich.</div>
+    <div class="wort"><b>KI</b>Künstliche Intelligenz: ein Programm, das Texte und Code schreiben kann. Claude ist eine.</div>
+    <div class="wort"><b>Koordinaten</b>Position auf dem Bildschirm als <code>x</code> (nach rechts) und <code>y</code> (nach unten).</div>
+    <div class="wort"><b>main</b>Die offizielle Version des Projekts.</div>
+    <div class="wort"><b>Prompt</b>Das, was ihr Claude schreibt oder sagt.</div>
+    <div class="wort"><b>Pull Request</b>Vorschlag, eine Änderung in <code>main</code> zu übernehmen.</div>
+    <div class="wort"><b>Push</b>Speicherpunkte zu GitHub hochladen.</div>
+    <div class="wort"><b>Repo</b>Kurz für Repository: der Projektordner auf GitHub.</div>
+    <div class="wort"><b>SETTINGS</b>Block oben im Code mit Zahlen, die ihr selbst ändern dürft, zum Beispiel die Geschwindigkeit.</div>
+    <div class="wort"><b>Spielschleife</b>Die vier Schritte, die ein Spiel 60-mal pro Sekunde wiederholt.</div>
+    <div class="wort"><b>Sprite</b>Figur oder Gegenstand im Spiel.</div>
+    <div class="wort"><b>Test</b>Ausprobieren, ob alles funktioniert. Bei uns zuerst durch einen Roboter, dann durch euch.</div>
+  </div>
+
   <!-- ============ Platzhalter-Spiel ============ -->
-  <h2>🎮 Hier entsteht das Spiel</h2>
+  <h2 id="spiel">🎮 Hier entsteht das Spiel</h2>
   <p class="lead">Bis das Pferd kommt, läuft hier ein Platzhalter. Klick aufs Spielfeld, dann Pfeiltasten oder WASD.</p>
   <div class="spielbox">
     <canvas id="game" width="960" height="540" tabindex="0" aria-label="Spielfeld"></canvas>

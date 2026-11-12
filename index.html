@@ -589,7 +589,7 @@
       </div>
     </div>
     <p>Klick aufs Feld · Enter = Start · W A S D oder Pfeile = reiten · Leertaste = Galopp · R = Neustart</p>
-    <p><small>Karte: © <a href="https://www.openstreetmap.org/copyright" style="color:#9fd4ff">OpenStreetMap-Mitwirkende</a> · 3D: three.js</small></p>
+    <p><small>Karte: © <a href="https://www.openstreetmap.org/copyright" style="color:#9fd4ff">OpenStreetMap-Mitwirkende</a> · Häuser: swissBUILDINGS3D © <a href="https://www.swisstopo.admin.ch" style="color:#9fd4ff">swisstopo</a> · 3D: three.js</small></p>
   </div>
 
 </main>
@@ -598,6 +598,7 @@
 
 <script src="assets/three.min.js"></script>
 <script src="assets/karte.js"></script>
+<script src="assets/gebaeude.js"></script>
 <script>
 // ===== SETTINGS: Zahlen ändern, speichern, Seite neu laden! =====
 const SETTINGS = {
@@ -627,6 +628,8 @@ const SETTINGS = {
   floorHeight: 3.3,        // Höhe eines Stockwerks (für die Fenster)
   windowSpacing: 3,        // Abstand der Fenster nebeneinander
   roofSteepness: 0.4,      // Wie steil die Giebeldächer sind
+  realBuildings: true,     // Echte 3D-Häuser von swisstopo (false = einfache Klötze aus OpenStreetMap)
+  flatRoofSlope: 0.12,     // Dächer, die weniger steil sind, gelten als Flachdach (Kies statt Ziegel)
   mountainCount: 46,       // Berge am Horizont
   cloudCount: 16,          // Wolken am Himmel
   colors: {
@@ -1031,6 +1034,32 @@ const AREA_COLORS = { wiese: SETTINGS.colors.meadow, wald: SETTINGS.colors.fores
   wasser: SETTINGS.colors.water, platz: SETTINGS.colors.square, wohnen: SETTINGS.colors.garden };
 const AREA_ORDER = ['acker', 'wohnen', 'wiese', 'wald', 'platz', 'wasser'];   // was später kommt, liegt oben
 
+// Echte Häuser von swisstopo (assets/gebaeude.js), falls die Datei da ist und SETTINGS es will
+const REAL_HOUSES = SETTINGS.realBuildings && typeof GEBAEUDE !== 'undefined' ? GEBAEUDE : null;
+
+// Grundriss eines echten Hauses als Punktliste auf der Karte
+function realOutlines([x, z, , footprints]) {
+  return footprints.map(f => toPoints(f).map(p => ({ x: p.x + x, z: p.z + z })));
+}
+
+// Steht an der Stelle eines OSM-Hauses schon ein echtes Haus? (swisstopo ist von 2019, neuere Häuser fehlen dort)
+function coveredByRealHouse(b) {
+  const pts = toPoints(b, 1);
+  const cx = pts.reduce((s, p) => s + p.x, 0) / pts.length, cz = pts.reduce((s, p) => s + p.z, 0) / pts.length;
+  return REAL_HOUSES.some(h => Math.abs(h[0] - cx) < 150 && Math.abs(h[1] - cz) < 150 &&
+    realOutlines(h).some(o => insidePolygon(cx, cz, o) || pts.filter(p => insidePolygon(p.x, p.z, o)).length * 2 > pts.length));
+}
+
+// OSM-Häuser, die als einfache Klötze gebaut werden: alle, oder nur die, die swisstopo nicht kennt
+const OSM_HOUSES = MAP.buildings.map((b, i) => ({ b, i })).filter(({ b }) => !REAL_HOUSES || !coveredByRealHouse(b));
+
+// Grundrisse aller Häuser als Punktlisten (für Anstossen, Bäume und Minikarte)
+function houseOutlines() {
+  const outlines = OSM_HOUSES.map(({ b }) => toPoints(b, 1));
+  for (const house of REAL_HOUSES || []) outlines.push(...realOutlines(house));
+  return outlines;
+}
+
 function buildGround() {
   const size = Math.max(MAP.width, MAP.depth) * 3;
   const groundTexture = TEX.noise.clone();
@@ -1112,6 +1141,7 @@ function buildRoads() {
 // ---------- Welt bauen: Häuser als Klötze ----------
 const WALL_COLORS = ['#fff3dc', '#ffe0b8', '#ffffff', '#dcecff', '#ffd6d6', '#e3f7d5'];
 const ROOF_COLORS = ['#b8503a', '#8d4a3a', '#6c6f78', '#a5603f'];
+const FLAT_ROOF = new THREE.Color('#9a968c');   // Kies auf Flachdächern
 
 // Fenster auf die Wände: u geht der Wand entlang, v nach oben
 function wallUV(a, b, c) {
@@ -1170,9 +1200,50 @@ function addGableRoof(builders, pts, height, wall, roof) {
   }
 }
 
+// Echte Häuser: jede Ecke kommt in Zentimetern aus gebaeude.js, relativ zur Hausmitte
+function realHouseTriangles(builders, house, wall, roof, isGoal) {
+  const [x, z, , , corners, roofTris, wallTris] = house;
+  const corner = i => new THREE.Vector3(x + corners[i * 3] / 100, corners[i * 3 + 1] / 100, z + corners[i * 3 + 2] / 100);
+  for (let k = 0; k < wallTris.length; k += 3) {
+    const [a, b, c] = [wallTris[k], wallTris[k + 1], wallTris[k + 2]].map(corner);
+    addTriangle(builders.walls, a, b, c, wall, wallUV(a, b, c));
+  }
+  for (let k = 0; k < roofTris.length; k += 3) {
+    const [a, b, c] = [roofTris[k], roofTris[k + 1], roofTris[k + 2]].map(corner);
+    const n = new THREE.Vector3().subVectors(b, a).cross(new THREE.Vector3().subVectors(c, a)).normalize();
+    const steep = Math.hypot(n.x, n.z) > SETTINGS.flatRoofSlope;     // schräges Dach = Ziegel
+    if (steep && !isGoal) addTriangle(builders.roofs, a, b, c, roof, p => [p.x / 1.6, (p.y + p.z) / 1.6]);
+    else addTriangle(builders.flat, a, b, c, isGoal ? roof : FLAT_ROOF, p => [p.x / 6, p.z / 6]);
+  }
+}
+
+// Welches echte Haus ist die OYM-Halle? Das, in dessen Grundriss das Ziel liegt (sonst das nächste).
+function findGoalHouse() {
+  if (OSM_HOUSES.some(({ i }) => i === MAP.goalBuilding)) return -1;   // die Halle ist ein OSM-Klotz
+  const [gx, gz] = MAP.goal;
+  let best = 0, bestDist = Infinity;
+  REAL_HOUSES.forEach(([x, z, , footprints], i) => {
+    const inside = footprints.some(f => insidePolygon(gx - x, gz - z, toPoints(f)));
+    const dist = inside ? -1 : Math.hypot(x - gx, z - gz);
+    if (dist < bestDist) { best = i; bestDist = dist; }
+  });
+  return best;
+}
+
+function buildRealHouses(builders) {
+  const goal = findGoalHouse();
+  REAL_HOUSES.forEach((house, i) => {
+    const isGoal = i === goal;
+    const wall = new THREE.Color(isGoal ? SETTINGS.colors.goalHall : WALL_COLORS[i % WALL_COLORS.length]);
+    const roof = new THREE.Color(isGoal ? SETTINGS.colors.goalRoof : ROOF_COLORS[i % ROOF_COLORS.length]);
+    realHouseTriangles(builders, house, wall, roof, isGoal);
+  });
+}
+
 function buildHouses() {
   const builders = { walls: makeBuilder(), roofs: makeBuilder(), flat: makeBuilder() };
-  MAP.buildings.forEach((b, i) => {
+  if (REAL_HOUSES) buildRealHouses(builders);
+  OSM_HOUSES.forEach(({ b, i }) => {
     const points = toPoints(b, 1);
     const isGoal = i === MAP.goalBuilding;
     const wall = new THREE.Color(isGoal ? SETTINGS.colors.goalHall : WALL_COLORS[i % WALL_COLORS.length]);
@@ -1365,7 +1436,8 @@ function buildCarrots() {
 // Die Welt ist in Felder von 25 m geteilt. So müssen wir nur Häuser in der Nähe prüfen.
 const GRID = 25;
 const solidGrid = new Map();
-const solids = [...MAP.buildings.map(b => toPoints(b, 1)), ...MAP.areas.filter(a => a[0] === 'wasser').map(a => toPoints(a, 1))];
+const HOUSE_OUTLINES = houseOutlines();
+const solids = [...HOUSE_OUTLINES, ...MAP.areas.filter(a => a[0] === 'wasser').map(a => toPoints(a, 1))];
 
 function gridKey(x, z) { return Math.floor(x / GRID) + ',' + Math.floor(z / GRID); }
 
@@ -1717,9 +1789,9 @@ function drawMinimapBase() {
     g.fill();
   }
   g.fillStyle = '#9a9a9a';
-  for (const b of MAP.buildings) {
+  for (const outline of HOUSE_OUTLINES) {
     g.beginPath();
-    toPoints(b, 1).forEach((p, i) => (i ? g.lineTo : g.moveTo).call(g, p.x * minimapScale, p.z * minimapScale));
+    outline.forEach((p, i) => (i ? g.lineTo : g.moveTo).call(g, p.x * minimapScale, p.z * minimapScale));
     g.fill();
   }
   for (const road of MAP.roads) if (road[0] < 2) line(toPoints(road, 1), '#ffffff', road[0] === 0 ? 2.5 : 1.5);

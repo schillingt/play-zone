@@ -109,7 +109,7 @@ Jede App entsteht in denselben sieben Phasen. Phase 1 bis 3 machen wir am Anfang
 
 **Zurückgehen ist erlaubt.** Fällt beim Testen auf, dass etwas nicht zusammenpasst, gehen wir zum Design oder zum Plan zurück.
 
-**Wo wir stehen:** Das Spiel ist jetzt in 3D: Ihr reitet von Zuhause durch die echten Strassen von Zug (aus OpenStreetMap) bis zur OYM-Halle. Die Kurier-Aufträge aus Teil B bauen wir in diese neue Welt ein.
+**Wo wir stehen:** Das Spiel ist jetzt in 3D: Ihr reitet von Zuhause durch die echten Strassen von Zug (aus OpenStreetMap) bis zur OYM-Halle. Die Häuser sind echte 3D-Modelle von swisstopo (swissBUILDINGS3D, mit echten Dachformen); `tools/swisstopo_to_game.py` wandelt sie um. Die Kurier-Aufträge aus Teil B bauen wir in diese neue Welt ein.
 
 ## Die Schritte
 

@@ -1,128 +1,135 @@
-# Plan: Pferde-Welt Zug
+# Plan: Pferde-Kurier Zug
 
-Arbeitstitel: **ZugCraft: Pferde-Welt** (den echten Namen findet ihr zusammen).
+Arbeitstitel: **Pferde-Kurier Zug** (den echten Namen findet ihr zusammen).
 
 ## Die Idee in drei Sätzen
 
-Du läufst durch eine Welt aus Blöcken, wie in Minecraft. Du baust Blöcke ab, setzt sie wieder und reitest auf deinem Pferd. Die Welt ist Zug in der Schweiz: Zugersee, Zugerberg, Altstadt und Zytturm.
+Du reitest als Pferde-Kurier durch Zug und lieferst Pakete aus, bevor die Zeit abläuft. Später kommt ein zweiter Modus dazu: Zehn Fohlen sind ausgebüxt, und du bringst sie zurück in den Stall. Die Welt ist eine offene Karte von Zug mit Altstadt, Zytturm, Bahnhof, Zugersee und Zugerberg.
 
-## Was das Spiel ist (und was nicht)
+## Was das Spiel ist
 
-- **Seitenansicht in 2D**, nicht 3D. Das passt in eine einzige `index.html` ohne Zusatzprogramme. Es ist trotzdem ein Block-Spiel: Die Welt besteht aus Quadraten, die man abbauen und setzen kann.
-- **Nur Tastatur.** Pfeile oder WASD zum Laufen, dazu ein paar Tasten fürs Bauen (siehe unten).
+- **Ansicht von oben**, wie ein Stadtplan. Du reitest frei in alle Richtungen.
+- **Eine Datei**: alles steht in `index.html`, ohne Zusatzprogramme.
+- **Nur Tastatur.** Pfeile oder WASD.
 - **Emoji und einfache Formen** statt Bilddateien. Alle Geräusche kommen aus WebAudio.
 - **Alles auf Deutsch**: Startbildschirm, Anzeigen, Texte im Spiel.
-- **Kinderfreundlich.** Die Gegner sind Cartoon-Figuren. Wer getroffen wird, verliert ein Herz, mehr nicht.
+- **Kinderfreundlich.** Hindernisse sind Enten, Pfützen und Marktstände. Es gibt keine Kämpfe.
 
-## Spielablauf
-
-| Was | Wie |
-|---|---|
-| **Ziel (Sieg)** | Sammle 5 Zuger Schätze und bring sie in deinen Stall. Dann hast du gewonnen. |
-| **Verlieren** | Alle 3 Herzen sind weg. Herzen gehen verloren durch Gegner oder tiefe Stürze. |
-| **Punkte** | Schätze, abgebaute Blöcke, Zeitbonus beim Sieg. |
-| **Neustart** | Taste `R`. |
-| **Startbildschirm** | Titel, Kurzanleitung, Taste `Enter` zum Starten. |
-
-### Die 5 Zuger Schätze
-
-1. 🍰 **Kirschtorte** (Zuger Spezialität, versteckt in der Altstadt)
-2. 🍒 **Goldene Chriesi** (Kirschen, hoch oben im Baum am Zugerberg)
-3. ⏰ **Zytturm-Uhr** (oben auf dem Zytturm)
-4. ⚓ **Schiffsglocke** (auf dem Grund des Zugersees)
-5. 🏔️ **Gipfelstein** (ganz oben, mit Blick Richtung Rigi)
-
-### Steuerung (Vorschlag)
+## Steuerung (Vorschlag)
 
 | Taste | Aktion |
 |---|---|
-| `A` `D` / `←` `→` | Laufen oder Reiten |
-| `W` / `↑` / `Leertaste` | Springen |
-| `E` | Block vor dir abbauen |
-| `F` | Block vor dir setzen |
-| `1` bis `6` | Blocksorte wählen |
-| `H` | Aufs Pferd steigen oder absteigen |
+| `W` `A` `S` `D` / Pfeile | Reiten |
+| `Leertaste` | Galopp (schneller, die Ausdauer sinkt) |
+| `E` | Paket aufnehmen oder abgeben, Fohlen einfangen |
+| `Enter` | Spiel starten |
 | `R` | Neustart |
 
-## Das Pferd
+## Modus 1: Pferde-Kurier (wird zuerst gebaut)
 
-- 🐴 Name frei wählbar (Vorschlag: **Blitz**).
-- Zu Fuss: normal schnell, normal hoch springen.
-- Auf dem Pferd: doppelt so schnell, springt über 3 Blöcke hoch, kann seichtes Wasser durchqueren.
-- Das Pferd ist nur im Spiel, wenn du es mit einem Apfel (🍎) rufst. Apfelbäume wachsen im Gelände.
+**Ablauf:** Ein Auftrag erscheint, zum Beispiel »Pizza vom Stall zum Bahnhof«. Du holst das Paket ab, reitest zum Ziel und gibst es ab. Ein Pfeil am Bildschirmrand zeigt dir die Richtung. Dann kommt der nächste Auftrag.
 
-## Die Welt: Zug
+| Was | Regel |
+|---|---|
+| **Punkte** | 100 pro Lieferung, dazu 1 Punkt für jede Sekunde, die übrig bleibt. |
+| **Zeit** | Jeder Auftrag hat ein Zeitlimit. Eine Lieferung gibt Zusatzzeit auf die Gesamtuhr. |
+| **Sieg** | 10 Lieferungen geschafft. |
+| **Verlieren** | Die Gesamtuhr läuft ab. |
+| **Hindernisse** | Enten bremsen dich, Pfützen machen dich langsam, Marktstände blockieren den Weg. |
+| **Schwieriger werden** | Die Aufträge werden weiter entfernt, die Zeitlimits kürzer. |
 
-Von links nach rechts ist die Karte so aufgebaut:
+### Die Pakete
 
-1. **Zugerberg** (links): Wiese, Bäume, Kirschbäume, Höhle zum Graben.
-2. **Altstadt** (Mitte links): Häuser aus Stein, enge Gassen, **Zytturm** zum Hochklettern.
-3. **Seepromenade**: Pflaster, Bänke, Möwen 🐦.
-4. **Zugersee** (Mitte rechts): Wasser mit Boden aus Sand. Ein Schiff 🚢 fährt darüber.
-5. **Gegenüber vom See** (rechts): Hügel, Stall, Start der Berge.
-6. **Hintergrund**: Rigi und Pilatus als blaue Silhouetten, Wolken, Sonne und Mond.
-
-Farben: Blau und Weiss (die Zuger Farben) für Fahne und Stall.
-
-### Blocksorten
-
-| Nr. | Block | Besonderheit |
+| Paket | Von | Nach |
 |---|---|---|
-| 1 | 🟩 Gras | |
-| 2 | 🟫 Erde | |
-| 3 | ⬜ Stein | hart, braucht länger zum Abbauen |
-| 4 | 🟨 Sand | |
-| 5 | 🟦 Wasser | man kann es nicht abbauen, nur durchschwimmen |
-| 6 | 🪵 Holz | zum Bauen von Stall und Brücken |
+| 🍕 Pizza | Altstadt | Seepromenade |
+| 📦 Paket | Bahnhof | Zytturm |
+| ✉️ Post | Zytturm | Zugerberg |
+| 🍰 Kirschtorte | Zugerberg | Bahnhof |
+
+Die Liste ist ein Startvorschlag. Ihr denkt euch weitere Aufträge aus.
+
+## Modus 2: Entlaufene Fohlen (kommt danach)
+
+**Ablauf:** Zehn Fohlen 🐴 sind aus dem Stall ausgebüxt. Du findest sie in Zug, fängst sie ein und bringst sie zurück.
+
+| Was | Regel |
+|---|---|
+| **Verstecken** | Die Fohlen stehen an bekannten Orten, zum Beispiel am See, in der Altstadt oder am Bahnhof. |
+| **Einfangen** | Reite langsam heran und drücke `E`. Wenn du im Galopp kommst, rennt das Fohlen weg. |
+| **Zurückbringen** | Das gefangene Fohlen folgt dir bis zum Stall. |
+| **Sieg** | Alle 10 Fohlen sind im Stall. |
+| **Verlieren** | Die Sonne geht unter, bevor alle zurück sind. |
+| **Punkte** | 50 pro Fohlen, dazu ein Bonus für die übrige Zeit. |
+
+Auf dem Startbildschirm wählst du den Modus mit `1` (Kurier) oder `2` (Fohlen).
+
+## Die Karte von Zug
+
+Eine Karte, die in beiden Modi gebraucht wird:
+
+| Ort | Aussehen auf der Karte |
+|---|---|
+| **Stall** | Start und Ziel. Blaues Dach mit weisser Fahne (die Zuger Farben). |
+| **Altstadt** | Gassen zwischen Häusern, Marktstände. |
+| **Zytturm** | Turm am Rand der Altstadt, immer gut zu sehen. |
+| **Seepromenade** | Weg am Wasser, Bänke, Möwen 🐦. |
+| **Zugersee** | Wasser. Das Pferd kann nicht schwimmen. Ein Schiff 🚢 fährt darüber. |
+| **Bahnhof** | Gleise und ein kleiner Zug 🚆. |
+| **Zugerberg** | Hügel mit Wiese und Bäumen. Bergauf bist du langsamer. |
+
+Unten rechts zeigt eine kleine Übersichtskarte, wo du bist.
 
 ## Die Schritte
 
 Jeder Schritt ist **eine Änderung und ein Commit**. Nach jedem Schritt laden wir die Seite neu und spielen kurz. Wenn es nicht passt, machen wir den Schritt rückgängig.
 
-### Teil A: Erste spielbare Version (Claude baut Schritte 1 bis 5 in einem Rutsch)
+### Teil A: Welt und Pferd (Claude baut Schritte 1 bis 3 in einem Rutsch)
 
 | # | Schritt | Fertig, wenn... |
 |---|---|---|
 | 1 | **Startbildschirm** auf Deutsch | Titel erscheint, `Enter` startet, `R` startet neu. |
-| 2 | **Blockwelt zeichnen** | Himmel, Gras, Erde, Stein, Wasser sind als Raster sichtbar. Die Kamera folgt der Figur. |
-| 3 | **Figur laufen und springen** | Die Figur steht auf Blöcken, fällt, springt und läuft nicht durch Wände. |
-| 4 | **Abbauen und setzen** | `E` entfernt einen Block, `F` setzt einen. Unten zeigt eine Leiste die Blocksorte. |
-| 5 | **Pferd** | `H` setzt dich aufs Pferd. Es ist schneller und springt höher. |
+| 2 | **Karte von Zug zeichnen** | See, Altstadt, Bahnhof, Zugerberg und Stall sind zu sehen. Die Kamera folgt dem Pferd. |
+| 3 | **Pferd reiten** | Das Pferd reitet in alle Richtungen, bleibt vor dem See und vor Häusern stehen. `Leertaste` macht es schneller. |
 
-### Teil B: Die Welt wird zu Zug
+### Teil B: Modus Kurier (erste spielbare Version)
 
 | # | Schritt | Fertig, wenn... |
 |---|---|---|
-| 6 | **Zugersee und Zugerberg** | Hügel links, See rechts, Sand am Ufer. |
-| 7 | **Altstadt und Zytturm** | Häuser und ein Turm, auf den man klettern kann. |
-| 8 | **Berge im Hintergrund** | Rigi und Pilatus als Silhouetten, Wolken ziehen. |
+| 4 | **Aufträge und Pfeil** | Ein Auftrag erscheint, der Pfeil zeigt zum Ziel. `E` nimmt das Paket auf und gibt es ab. |
+| 5 | **Uhr und Punkte** | Oben stehen Zeit und Punkte. Lieferungen geben Punkte und Zusatzzeit. |
+| 6 | **Sieg und Verlieren** | Nach 10 Lieferungen erscheint »Geschafft!«. Läuft die Uhr ab, erscheint »Zeit um!«. Beide zeigen die Punktzahl. |
+| 7 | **Hindernisse** | Enten, Pfützen und Marktstände stehen im Weg. |
+| 8 | **Übersichtskarte** | Unten rechts zeigt die Karte Pferd und Ziel. |
 
-### Teil C: Ein Spiel wird daraus
-
-| # | Schritt | Fertig, wenn... |
-|---|---|---|
-| 9 | **Schätze sammeln** | 5 Schätze liegen in der Welt, der Zähler oben zeigt `Schätze: 2/5`. |
-| 10 | **Gewinnen** | Mit 5 Schätzen im Stall erscheint »Gewonnen!« mit Punktzahl. |
-| 11 | **Gegner und Herzen** | Cartoon-Gegner laufen herum. Drei Herzen. Bei null kommt »Verloren!«. |
-| 12 | **Tag und Nacht** | Der Himmel wird dunkel, nachts gibt es mehr Gegner. |
-
-### Teil D: Es fühlt sich gut an
+### Teil C: Es fühlt sich gut an
 
 | # | Schritt | Fertig, wenn... |
 |---|---|---|
-| 13 | **Geräusche** | Abbauen, Setzen, Springen, Wiehern, Schatz gefunden. Alles aus WebAudio. |
-| 14 | **Partikel und Wackeln** | Staub beim Abbauen, Konfetti beim Schatz, Bildschirm wackelt bei Treffer. |
-| 15 | **Highscore speichern** | Die beste Punktzahl bleibt nach dem Neuladen erhalten. |
+| 9 | **Geräusche** | Hufe, Wiehern, Abgeben, Zeit wird knapp. Alles aus WebAudio. |
+| 10 | **Staub und Konfetti** | Staubwolke beim Galopp, Konfetti bei der Lieferung. |
+| 11 | **Highscore speichern** | Die beste Punktzahl bleibt nach dem Neuladen erhalten. |
+
+### Teil D: Modus Fohlen
+
+| # | Schritt | Fertig, wenn... |
+|---|---|---|
+| 12 | **Modus-Auswahl** | Auf dem Startbildschirm wählt `1` oder `2` den Modus. |
+| 13 | **Fohlen verstecken** | 10 Fohlen stehen an festen Orten in Zug. Der Zähler zeigt `Fohlen: 3/10`. |
+| 14 | **Einfangen und Heimbringen** | Langsam heranreiten und `E` fängt ein Fohlen. Es folgt dir zum Stall. |
+| 15 | **Wegrennen** | Im Galopp rennen Fohlen weg. |
+| 16 | **Sonnenuntergang** | Der Himmel wird dunkler. Ist die Sonne weg, erscheint »Zu spät!«. Alle Fohlen im Stall geben »Geschafft!«. |
 
 ### Teil E: Eure Ideen (Reihenfolge frei)
 
-- Zweites Pferd mit anderer Farbe
-- Hufeisen als Power-Up (kurz unverwundbar)
-- Fasnachts-Gegner (Zug hat eine bekannte Fasnacht)
+- Seemonster im Zugersee als letzte Mission
+- Detektiv-Mission: Wer hat die Kirschtorte gestohlen?
+- Stall ausbauen: Pferde füttern und striegeln
+- Schnelleres Pferd als Belohnung
+- Rennen vom See auf den Zugerberg
 - Zweiter Spieler auf derselben Tastatur
-- Ein eigenes Bild als Figur
 - Geheimer Cheat-Code
-- Schloss bauen, das auf Punkte zählt
+- Ein eigenes Bild als Figur
 
 ## Einstellungen zum Selbständern
 
@@ -130,27 +137,27 @@ Alle Zahlen stehen im Block `SETTINGS` oben in `index.html`. Geplant:
 
 | Name | Bedeutung |
 |---|---|
-| `walkSpeed` | Lauftempo zu Fuss |
-| `horseSpeed` | Tempo auf dem Pferd |
-| `jumpHeight` | Sprunghöhe zu Fuss |
-| `horseJumpHeight` | Sprunghöhe auf dem Pferd |
-| `gravity` | Wie schnell man fällt |
-| `startLives` | Anzahl Herzen am Anfang |
-| `treasuresToWin` | Wie viele Schätze zum Sieg nötig sind |
-| `enemySpawnRate` | Wie oft Gegner auftauchen |
-| `dayLengthSeconds` | Dauer von Tag und Nacht |
-| `hero`, `horse`, Farben | Emoji und Farben |
+| `walkSpeed` | Reittempo |
+| `gallopSpeed` | Tempo im Galopp |
+| `staminaSeconds` | Wie lange der Galopp hält |
+| `startTimeSeconds` | Gesamtzeit am Anfang (Kurier) |
+| `bonusTimeSeconds` | Zusatzzeit pro Lieferung |
+| `deliveriesToWin` | Lieferungen bis zum Sieg |
+| `foalCount` | Anzahl Fohlen |
+| `dayLengthSeconds` | Zeit bis zum Sonnenuntergang (Fohlen) |
+| `pointsPerDelivery` | Punkte pro Lieferung |
+| `horse`, `foal`, Farben | Emoji und Farben |
 
 ## Was schiefgehen kann
 
-- **Grosse Welt wird langsam.** Wir zeichnen nur, was auf dem Bildschirm zu sehen ist.
 - **Zu viel auf einmal.** Deshalb nur eine Änderung pro Schritt.
 - **Zu schwer oder zu leicht.** Dafür gibt es `SETTINGS`. Zahl ändern, neu laden, ausprobieren.
+- **Pferd bleibt an Ecken hängen.** Wir testen jeden Ort auf der Karte mit einem Roboter-Spieler.
 
 ## Fragen an euch, bevor es losgeht
 
 1. Wie heisst das Spiel?
 2. Wie heisst das Pferd, und welche Farbe hat es?
-3. Welche Orte in Zug gehören unbedingt rein? (Eigene Orte zählen mehr als meine Liste.)
-4. Soll es Gegner geben, und wie sehen sie aus?
+3. Welche weiteren Orte in Zug gehören unbedingt auf die Karte?
+4. Welche Pakete soll der Kurier ausliefern?
 5. Allein spielen oder zu zweit?

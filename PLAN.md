@@ -1,6 +1,6 @@
-# Plan: Pferde-Kurier Zug
+# Plan: Horse World (Switzerland)
 
-Arbeitstitel: **Pferde-Kurier Zug** (den echten Namen findet ihr zusammen).
+Titel: **Horse World (Switzerland)**. Die beiden Spielmodi heissen »Pferde-Kurier« und »Entlaufene Fohlen«.
 
 ## Die Idee in drei Sätzen
 
@@ -179,8 +179,7 @@ Alle Zahlen stehen im Block `SETTINGS` oben in `index.html`. Geplant:
 
 ## Fragen an euch, bevor es losgeht
 
-1. Wie heisst das Spiel?
-2. Wie heisst das Pferd, und welche Farbe hat es?
-3. Welche weiteren Orte in Zug gehören unbedingt auf die Karte?
-4. Welche Pakete soll der Kurier ausliefern?
-5. Allein spielen oder zu zweit?
+1. Wie heisst das Pferd, und welche Farbe hat es?
+2. Welche weiteren Orte in Zug gehören unbedingt auf die Karte?
+3. Welche Pakete soll der Kurier ausliefern?
+4. Allein spielen oder zu zweit?

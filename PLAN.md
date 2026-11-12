@@ -4,7 +4,7 @@ Arbeitstitel: **Pferde-Kurier Zug** (den echten Namen findet ihr zusammen).
 
 ## Die Idee in drei Sätzen
 
-Du reitest als Pferde-Kurier durch Zug und lieferst Pakete aus, bevor die Zeit abläuft. Später kommt ein zweiter Modus dazu: Zehn Fohlen sind ausgebüxt, und du bringst sie zurück in den Stall. Die Welt ist eine offene Karte von Zug mit Altstadt, Zytturm, Bahnhof, Zugersee und Zugerberg.
+Du reitest als Pferde-Kurier durch Zug und lieferst Pakete aus, bevor die Zeit abläuft. Dein Pferd hat Hunger und Laune: Du fütterst und streichelst es. Später kommt ein zweiter Modus dazu: Zehn Fohlen sind ausgebüxt, und du bringst sie zurück in den Stall. Die Welt ist eine offene Karte von Zug mit Altstadt, Zytturm, Bahnhof, Zugersee und Zugerberg.
 
 ## Was das Spiel ist
 
@@ -22,8 +22,21 @@ Du reitest als Pferde-Kurier durch Zug und lieferst Pakete aus, bevor die Zeit a
 | `W` `A` `S` `D` / Pfeile | Reiten |
 | `Leertaste` | Galopp (schneller, die Ausdauer sinkt) |
 | `E` | Paket aufnehmen oder abgeben, Fohlen einfangen |
+| `F` | Pferd füttern (Karotte oder Apfel) |
+| `G` | Pferd streicheln (gedrückt halten, das Pferd steht still) |
 | `Enter` | Spiel starten |
 | `R` | Neustart |
+
+## Dein Pferd: füttern und streicheln
+
+Das Pferd hat zwei Anzeigen oben links. Sie gelten in beiden Modi.
+
+| Anzeige | Was sie macht |
+|---|---|
+| 🥕 **Hunger** | Sinkt langsam. Bei leerem Balken kannst du nicht galoppieren und reitest langsamer. `F` füttert: eine Karotte oder ein Apfel füllt den Balken. |
+| ❤️ **Laune** | Sinkt, wenn du gegen Enten, Pfützen und Marktstände rennst. `G` streicheln füllt sie wieder auf, mit Herzchen und Wiehern. Gute Laune gibt mehr Ausdauer im Galopp. |
+
+**Futter:** Du hast einen Vorrat (am Anfang 3). Nachschub gibt es am Futtertrog im Stall, an Apfelbäumen am Zugerberg und an Marktständen in der Altstadt.
 
 ## Modus 1: Pferde-Kurier (wird zuerst gebaut)
 
@@ -56,7 +69,7 @@ Die Liste ist ein Startvorschlag. Ihr denkt euch weitere Aufträge aus.
 | Was | Regel |
 |---|---|
 | **Verstecken** | Die Fohlen stehen an bekannten Orten, zum Beispiel am See, in der Altstadt oder am Bahnhof. |
-| **Einfangen** | Reite langsam heran und drücke `E`. Wenn du im Galopp kommst, rennt das Fohlen weg. |
+| **Einfangen** | Reite langsam heran und drücke `E`. Wenn du im Galopp kommst, rennt das Fohlen weg. Mit einer Karotte (`F`) und Streicheln (`G`) beruhigst du ein scheues Fohlen. |
 | **Zurückbringen** | Das gefangene Fohlen folgt dir bis zum Stall. |
 | **Sieg** | Alle 10 Fohlen sind im Stall. |
 | **Verlieren** | Die Sonne geht unter, bevor alle zurück sind. |
@@ -70,7 +83,7 @@ Eine Karte, die in beiden Modi gebraucht wird:
 
 | Ort | Aussehen auf der Karte |
 |---|---|
-| **Stall** | Start und Ziel. Blaues Dach mit weisser Fahne (die Zuger Farben). |
+| **Stall** | Start und Ziel, mit Futtertrog. Blaues Dach mit weisser Fahne (die Zuger Farben). |
 | **Altstadt** | Gassen zwischen Häusern, Marktstände. |
 | **Zytturm** | Turm am Rand der Altstadt, immer gut zu sehen. |
 | **Seepromenade** | Weg am Wasser, Bänke, Möwen 🐦. |
@@ -102,29 +115,36 @@ Jeder Schritt ist **eine Änderung und ein Commit**. Nach jedem Schritt laden wi
 | 7 | **Hindernisse** | Enten, Pfützen und Marktstände stehen im Weg. |
 | 8 | **Übersichtskarte** | Unten rechts zeigt die Karte Pferd und Ziel. |
 
-### Teil C: Es fühlt sich gut an
+### Teil C: Pferd füttern und streicheln
 
 | # | Schritt | Fertig, wenn... |
 |---|---|---|
-| 9 | **Geräusche** | Hufe, Wiehern, Abgeben, Zeit wird knapp. Alles aus WebAudio. |
-| 10 | **Staub und Konfetti** | Staubwolke beim Galopp, Konfetti bei der Lieferung. |
-| 11 | **Highscore speichern** | Die beste Punktzahl bleibt nach dem Neuladen erhalten. |
+| 9 | **Hunger und Futter** | Der Hunger-Balken sinkt. `F` füttert, der Vorrat sinkt. Bei leerem Balken geht kein Galopp. Futtertrog und Apfelbäume geben Nachschub. |
+| 10 | **Laune und Streicheln** | Der Laune-Balken sinkt bei Zusammenstössen. `G` streicheln lässt Herzchen aufsteigen und füllt den Balken. |
 
-### Teil D: Modus Fohlen
+### Teil D: Es fühlt sich gut an
 
 | # | Schritt | Fertig, wenn... |
 |---|---|---|
-| 12 | **Modus-Auswahl** | Auf dem Startbildschirm wählt `1` oder `2` den Modus. |
-| 13 | **Fohlen verstecken** | 10 Fohlen stehen an festen Orten in Zug. Der Zähler zeigt `Fohlen: 3/10`. |
-| 14 | **Einfangen und Heimbringen** | Langsam heranreiten und `E` fängt ein Fohlen. Es folgt dir zum Stall. |
-| 15 | **Wegrennen** | Im Galopp rennen Fohlen weg. |
-| 16 | **Sonnenuntergang** | Der Himmel wird dunkler. Ist die Sonne weg, erscheint »Zu spät!«. Alle Fohlen im Stall geben »Geschafft!«. |
+| 11 | **Geräusche** | Hufe, Wiehern, Kauen, Abgeben, Zeit wird knapp. Alles aus WebAudio. |
+| 12 | **Staub und Konfetti** | Staubwolke beim Galopp, Konfetti bei der Lieferung. |
+| 13 | **Highscore speichern** | Die beste Punktzahl bleibt nach dem Neuladen erhalten. |
 
-### Teil E: Eure Ideen (Reihenfolge frei)
+### Teil E: Modus Fohlen
+
+| # | Schritt | Fertig, wenn... |
+|---|---|---|
+| 14 | **Modus-Auswahl** | Auf dem Startbildschirm wählt `1` oder `2` den Modus. |
+| 15 | **Fohlen verstecken** | 10 Fohlen stehen an festen Orten in Zug. Der Zähler zeigt `Fohlen: 3/10`. |
+| 16 | **Einfangen und Heimbringen** | Langsam heranreiten und `E` fängt ein Fohlen. Es folgt dir zum Stall. |
+| 17 | **Wegrennen und Beruhigen** | Im Galopp rennen Fohlen weg. Karotte und Streicheln beruhigen sie. |
+| 18 | **Sonnenuntergang** | Der Himmel wird dunkler. Ist die Sonne weg, erscheint »Zu spät!«. Alle Fohlen im Stall geben »Geschafft!«. |
+
+### Teil F: Eure Ideen (Reihenfolge frei)
 
 - Seemonster im Zugersee als letzte Mission
 - Detektiv-Mission: Wer hat die Kirschtorte gestohlen?
-- Stall ausbauen: Pferde füttern und striegeln
+- Pferd striegeln und Hufe putzen
 - Schnelleres Pferd als Belohnung
 - Rennen vom See auf den Zugerberg
 - Zweiter Spieler auf derselben Tastatur
@@ -144,6 +164,9 @@ Alle Zahlen stehen im Block `SETTINGS` oben in `index.html`. Geplant:
 | `bonusTimeSeconds` | Zusatzzeit pro Lieferung |
 | `deliveriesToWin` | Lieferungen bis zum Sieg |
 | `foalCount` | Anzahl Fohlen |
+| `hungerSeconds` | Zeit, bis der Hunger-Balken leer ist |
+| `startFood` | Futter-Vorrat am Anfang |
+| `petBoost` | Wie viel Laune ein Streicheln bringt |
 | `dayLengthSeconds` | Zeit bis zum Sonnenuntergang (Fohlen) |
 | `pointsPerDelivery` | Punkte pro Lieferung |
 | `horse`, `foal`, Farben | Emoji und Farben |

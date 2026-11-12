@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Play Zone</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #12122a; color: #fff; font-family: system-ui, sans-serif; }
+  body { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; }
+  canvas { background: #1d1d45; border-radius: 12px; max-width: 96vw; max-height: 80vh; }
+</style>
+</head>
+<body>
+<canvas id="game" width="960" height="540"></canvas>
+<div>Placeholder — arrow keys or WASD to move. The real game goes here.</div>
+<script>
+// ===== SETTINGS: change these numbers and reload! =====
+const SETTINGS = {
+  hero: '🦖',
+  heroSize: 64,
+  speed: 320,          // pixels per second
+  background: '#1d1d45',
+};
+// ======================================================
+
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+const keys = new Set();
+addEventListener('keydown', e => { keys.add(e.key.toLowerCase()); if (e.key.startsWith('Arrow')) e.preventDefault(); });
+addEventListener('keyup', e => keys.delete(e.key.toLowerCase()));
+
+const hero = { x: canvas.width / 2, y: canvas.height / 2 };
+let last = performance.now();
+
+function update(dt) {
+  const dx = (keys.has('arrowright') || keys.has('d')) - (keys.has('arrowleft') || keys.has('a'));
+  const dy = (keys.has('arrowdown') || keys.has('s')) - (keys.has('arrowup') || keys.has('w'));
+  const half = SETTINGS.heroSize / 2;
+  hero.x = Math.min(canvas.width - half, Math.max(half, hero.x + dx * SETTINGS.speed * dt));
+  hero.y = Math.min(canvas.height - half, Math.max(half, hero.y + dy * SETTINGS.speed * dt));
+}
+
+function draw() {
+  ctx.fillStyle = SETTINGS.background;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.font = SETTINGS.heroSize + 'px serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(SETTINGS.hero, hero.x, hero.y);
+}
+
+function loop(now) {
+  const dt = Math.min(0.05, (now - last) / 1000);
+  last = now;
+  update(dt);
+  draw();
+  requestAnimationFrame(loop);
+}
+window.__hero = hero; // for automated tests
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>

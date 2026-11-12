@@ -109,7 +109,7 @@ Jede App entsteht in denselben sieben Phasen. Phase 1 bis 3 machen wir am Anfang
 
 **Zurückgehen ist erlaubt.** Fällt beim Testen auf, dass etwas nicht zusammenpasst, gehen wir zum Design oder zum Plan zurück.
 
-**Wo wir stehen:** Schritte 1 bis 3 sind gebaut (Startbildschirm, Karte von Zug, Pferd reiten). Als Nächstes kommt Schritt 4: Aufträge und Pfeil.
+**Wo wir stehen:** Das Spiel ist jetzt in 3D: Ihr reitet von Zuhause durch die echten Strassen von Zug (aus OpenStreetMap) bis zur OYM-Halle. Die Kurier-Aufträge aus Teil B bauen wir in diese neue Welt ein.
 
 ## Die Schritte
 

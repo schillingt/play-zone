@@ -191,7 +191,7 @@
   <div class="hero-emoji">🐴📦🏰</div>
   <h1>Horse World (Switzerland)</h1>
   <p>Reite durch Zug, liefere Pakete aus und fange entlaufene Fohlen ein.</p>
-  <a class="badge" href="#spiel">🎮 Jetzt spielen: Schritte 1 bis 3 sind gebaut</a>
+  <a class="badge" href="#spiel">🎮 Jetzt spielen: in 3D zur OYM-Halle</a>
 </header>
 
 <nav class="nav" aria-label="Inhalt">
@@ -569,7 +569,7 @@
 
   <!-- ============ Das Spiel ============ -->
   <h2 id="spiel">🎮 Das Spiel</h2>
-  <p class="lead">Schritte 1 bis 3: Startbildschirm, Karte von Zug, Pferd reiten. Klick aufs Spielfeld und drück Enter.</p>
+  <p class="lead">Reite in 3D von Zuhause durch die echten Strassen von Zug bis zur OYM-Halle. Klick aufs Spielfeld und drück Enter.</p>
   <div class="spielbox">
     <div class="spielfeld">
       <canvas id="game" width="960" height="540" tabindex="0" aria-label="Spielfeld"></canvas>
@@ -589,6 +589,7 @@
       </div>
     </div>
     <p>Klick aufs Feld · Enter = Start · W A S D oder Pfeile = reiten · Leertaste = Galopp · R = Neustart</p>
+    <p><small>Karte: © <a href="https://www.openstreetmap.org/copyright" style="color:#9fd4ff">OpenStreetMap-Mitwirkende</a> · 3D: three.js</small></p>
   </div>
 
 </main>
@@ -606,7 +607,7 @@ const SETTINGS = {
   turnSpeed: 2.2,          // Wie schnell das Pferd sich dreht
   acceleration: 3,         // Wie schnell das Pferd Tempo aufnimmt
   horseRadius: 1.2,        // Wie breit das Pferd beim Anstossen an Häuser ist
-  timeLimitSeconds: 300,   // Zeit bis »Zeit um!« (300 = 5 Minuten)
+  timeLimitSeconds: 360,   // Zeit bis »Zeit um!« (360 = 6 Minuten)
   pointsPerCarrot: 10,     // Punkte pro Karotte 🥕
   pointsPerSecondLeft: 2,  // Punkte pro übrige Sekunde im Ziel
   pickupDistance: 2.5,     // So nah musst du an eine Karotte heran
@@ -838,8 +839,8 @@ const scene = new THREE.Scene();
 scene.background = new THREE.Color(SETTINGS.colors.sky);
 scene.fog = new THREE.Fog(SETTINGS.colors.sky, SETTINGS.viewDistance * 0.5, SETTINGS.viewDistance);
 const camera = new THREE.PerspectiveCamera(60, canvas.width / canvas.height, 0.5, SETTINGS.viewDistance + 50);
-scene.add(new THREE.HemisphereLight('#ffffff', '#6b8f4a', 0.75));
-const sun = new THREE.DirectionalLight('#fff4dd', 0.8);
+scene.add(new THREE.HemisphereLight('#ffffff', '#cfcfcf', 0.8));
+const sun = new THREE.DirectionalLight('#fff4dd', 0.4);
 sun.position.set(-0.5, 1, 0.3);
 scene.add(sun);
 
@@ -945,7 +946,7 @@ function buildRoads() {
 }
 
 // ---------- Welt bauen: Häuser als Klötze ----------
-const WALL_COLORS = ['#f2ece0', '#e9dcc5', '#f6f1e7', '#dfe6ec', '#efe0cf'];
+const WALL_COLORS = ['#fff3dc', '#ffe0b8', '#ffffff', '#dcecff', '#ffd6d6', '#e3f7d5'];
 const ROOF_COLORS = ['#b8503a', '#8d4a3a', '#6c6f78', '#a5603f'];
 
 function buildHouses() {
@@ -1118,12 +1119,14 @@ function isBlocked(x, z) {
 }
 
 // ---------- Übersichtskarte unten rechts ----------
-const minimapScale = hud.minimap.width / Math.max(MAP.width, MAP.depth);
+// Die ganze Karte wird einmal klein gemalt. Gezeigt wird nur der Ausschnitt rund ums Pferd.
+const MINIMAP_METERS_PER_PIXEL = 3;   // grösser = man sieht mehr von Zug
+const minimapScale = 1 / MINIMAP_METERS_PER_PIXEL;
 const minimapBase = document.createElement('canvas');
 
 function drawMinimapBase() {
-  minimapBase.width = hud.minimap.width;
-  minimapBase.height = hud.minimap.height;
+  minimapBase.width = Math.ceil(MAP.width * minimapScale);
+  minimapBase.height = Math.ceil(MAP.depth * minimapScale);
   const g = minimapBase.getContext('2d');
   g.fillStyle = SETTINGS.colors.grass;
   g.fillRect(0, 0, minimapBase.width, minimapBase.height);
@@ -1149,16 +1152,20 @@ function drawMinimapBase() {
 
 function drawMinimap() {
   const g = hud.minimap.getContext('2d');
-  g.drawImage(minimapBase, 0, 0);
-  const dot = (x, z, color, size) => {
-    g.fillStyle = color; g.beginPath();
-    g.arc(x * minimapScale, z * minimapScale, size, 0, Math.PI * 2); g.fill();
+  const h = game.horse, size = hud.minimap.width;
+  const left = h.x * minimapScale - size / 2, top = h.z * minimapScale - size / 2;  // Ausschnitt ums Pferd
+  g.fillStyle = SETTINGS.colors.grass;
+  g.fillRect(0, 0, size, size);
+  g.drawImage(minimapBase, -left, -top);
+  const clamp = v => Math.max(6, Math.min(size - 6, v));   // Punkte ausserhalb bleiben am Rand sichtbar
+  const dot = (x, z, color, r) => {
+    g.fillStyle = color; g.strokeStyle = '#fff'; g.lineWidth = 2; g.beginPath();
+    g.arc(clamp(x * minimapScale - left), clamp(z * minimapScale - top), r, 0, Math.PI * 2); g.fill(); g.stroke();
   };
   dot(MAP.start[0], MAP.start[1], '#1b6ec2', 4);
   dot(MAP.goal[0], MAP.goal[1], '#ff3d7f', 6);
-  const h = game.horse;
-  g.save();                                               // Pferd als Pfeil
-  g.translate(h.x * minimapScale, h.z * minimapScale);
+  g.save();                                               // Pferd als Pfeil in der Mitte
+  g.translate(size / 2, size / 2);
   g.rotate(-h.heading);
   g.fillStyle = '#ffd54a'; g.strokeStyle = '#000'; g.lineWidth = 1.5;
   g.beginPath(); g.moveTo(0, 7); g.lineTo(5, -5); g.lineTo(-5, -5); g.closePath();

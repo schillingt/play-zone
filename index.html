@@ -614,6 +614,21 @@ const SETTINGS = {
   cameraDistance: 11,      // Abstand der Kamera hinter dem Pferd
   cameraHeight: 6,         // Höhe der Kamera
   viewDistance: 450,       // Wie weit man sieht (kleiner = schneller auf alten Laptops)
+  // --- Realistische Welt (kleinere Zahlen = schneller auf alten Laptops) ---
+  shadows: true,           // Schatten von Häusern, Bäumen und Pferd (false = aus)
+  shadowSize: 2048,        // Schärfe der Schatten (1024 = unschärfer, aber schneller)
+  sunDirection: [-0.55, 0.6, 0.6], // Woher die Sonne scheint (x = Osten, y = oben, z = Süden)
+  grassPerSquareMeter: 1.1,// Wie dicht das Gras wächst
+  grassRadius: 2,          // Wie weit ums Pferd Gras wächst (in Feldern zu 20 m)
+  flowerShare: 0.07,       // Anteil Grasbüschel mit Blume (0.07 = 7 %)
+  forestTreeSpacing: 7,    // Abstand der Bäume im Wald (Meter)
+  orchardTreeSpacing: 16,  // Abstand der Kirschbäume auf den Wiesen (Meter)
+  fencePostSpacing: 3,     // Abstand der Zaunpfosten um die Weiden (Meter)
+  floorHeight: 3.3,        // Höhe eines Stockwerks (für die Fenster)
+  windowSpacing: 3,        // Abstand der Fenster nebeneinander
+  roofSteepness: 0.4,      // Wie steil die Giebeldächer sind
+  mountainCount: 46,       // Berge am Horizont
+  cloudCount: 16,          // Wolken am Himmel
   colors: {
     horse: '#8a5a33',      // Fell
     mane: '#2e1d12',       // Mähne und Schweif
@@ -623,21 +638,32 @@ const SETTINGS = {
     riderShirt: '#e0457f', // T-Shirt
     riderSkin: '#f1c6a0',  // Haut
     riderHelmet: '#222b45',// Reithelm
-    sky: '#9fd4ff',        // Himmel
-    grass: '#86c95d',      // Boden
-    meadow: '#9bd66a',     // Wiese
-    field: '#c9d77a',      // Acker
-    garden: '#93cf68',     // Gärten im Quartier
-    forestFloor: '#4f8f3a',// Waldboden
+    sky: '#bfdcf2',        // Himmel am Horizont (auch der Dunst in der Ferne)
+    skyTop: '#3f86d6',     // Himmel ganz oben
+    sun: '#fff3d1',        // Sonnenlicht
+    mountain: '#4c6676',   // Berge in der Ferne
+    snow: '#f4f8ff',       // Schnee auf den Gipfeln
+    cloud: '#ffffff',      // Wolken
+    grassBlade: '#86bf58', // Grashalme
+    flowers: ['#ffffff', '#ffe14d', '#e84a7a', '#9b7bff'], // Blumen in der Wiese
+    fence: '#8a6a48',      // Holzzaun um die Weiden
+    trunk: '#6b4a2e',      // Baumstämme
+    pine: ['#2f5e34', '#36693a', '#2a5530'], // Tannen
+    cherry: ['#4f8f36', '#5c9b3e', '#6aa843'], // Kirschbäume auf den Wiesen
+    grass: '#7fb755',      // Boden
+    meadow: '#8cc35e',     // Wiese
+    field: '#c4c27a',      // Acker
+    garden: '#86bd5c',     // Gärten im Quartier
+    forestFloor: '#4a7a35',// Waldboden
     square: '#cfc6b6',     // Plätze und Parkplätze
-    water: '#3d8fd6',      // See und Bäche
+    water: '#2f78b5',      // See und Bäche
     bigRoad: '#5d6168',    // Hauptstrassen
     road: '#7a7e86',       // Quartierstrassen
     path: '#d9c7a3',       // Fuss- und Velowege
     track: '#b89b6a',      // Feldwege
     railBed: '#8f8577',    // Schotter der Bahn
     rail: '#4a4a52',       // Schienen
-    leaves: ['#3f9a3a', '#2f7f35', '#58b048'], // Baumkronen
+    leaves: ['#3f8a35', '#2f7230', '#4f9a3d'], // Laubbäume
     goalHall: '#f5f5f5',   // Wände der OYM-Halle
     goalRoof: '#ff3d7f',   // Dach der OYM-Halle
     goalBeam: '#ff7fb0',   // Lichtsäule über dem Ziel
@@ -835,18 +861,114 @@ const game = {
 // ---------- 3D-Grundgerüst: Renderer, Szene, Kamera, Licht ----------
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
 renderer.setPixelRatio(Math.min(2, window.devicePixelRatio));
+renderer.shadowMap.enabled = SETTINGS.shadows;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(SETTINGS.colors.sky);
-scene.fog = new THREE.Fog(SETTINGS.colors.sky, SETTINGS.viewDistance * 0.5, SETTINGS.viewDistance);
-const camera = new THREE.PerspectiveCamera(60, canvas.width / canvas.height, 0.5, SETTINGS.viewDistance + 50);
-scene.add(new THREE.HemisphereLight('#ffffff', '#cfcfcf', 0.8));
-const sun = new THREE.DirectionalLight('#fff4dd', 0.4);
-sun.position.set(-0.5, 1, 0.3);
-scene.add(sun);
+scene.fog = new THREE.Fog(SETTINGS.colors.sky, SETTINGS.viewDistance * 0.4, SETTINGS.viewDistance);
+const camera = new THREE.PerspectiveCamera(60, canvas.width / canvas.height, 0.3, SETTINGS.viewDistance + 50);
+scene.add(new THREE.HemisphereLight('#d6ebff', '#5f7d43', 0.62));
+
+// Die Sonne: ein Licht, das Schatten wirft. Es wandert mit dem Pferd mit.
+const sunDir = new THREE.Vector3(...SETTINGS.sunDirection).normalize();
+const sun = new THREE.DirectionalLight(SETTINGS.colors.sun, 0.75);
+sun.castShadow = SETTINGS.shadows;
+sun.shadow.mapSize.set(SETTINGS.shadowSize, SETTINGS.shadowSize);
+Object.assign(sun.shadow.camera, { left: -70, right: 70, top: 70, bottom: -70, near: 1, far: 400 });
+sun.shadow.bias = -0.0004;
+sun.shadow.normalBias = 0.04;
+scene.add(sun, sun.target);
+
+// ---------- Zufall, der jedes Mal gleich ist ----------
+// Mit derselben Startzahl kommen immer dieselben »Zufallszahlen«. So steht jeder Baum jedes Mal am selben Ort.
+function makeRandom(seed) {
+  return () => {
+    seed = (seed + 0x6D2B79F5) | 0;
+    let t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+
+// ---------- Texturen: kleine Bilder, die wir mit Code malen ----------
+function makeTexture(size, paint) {
+  const c = document.createElement('canvas');
+  c.width = c.height = size;
+  paint(c.getContext('2d'), size, makeRandom(size));
+  const t = new THREE.CanvasTexture(c);
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  t.anisotropy = renderer.capabilities.getMaxAnisotropy();
+  return t;
+}
+
+// Körniges Rauschen mit Flecken: macht Wiese, Erde und Asphalt lebendig
+function paintNoise(g, size, rand) {
+  g.fillStyle = '#ffffff';
+  g.fillRect(0, 0, size, size);
+  for (let i = 0; i < 60; i++) {                          // grosse, weiche Flecken
+    const x = rand() * size, y = rand() * size, r = 8 + rand() * 40;
+    g.fillStyle = rand() < 0.5 ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,200,0.05)';
+    for (const [ox, oy] of [[0, 0], [size, 0], [-size, 0], [0, size], [0, -size]]) {  // auch über den Rand, damit es nahtlos ist
+      g.beginPath(); g.arc(x + ox, y + oy, r, 0, Math.PI * 2); g.fill();
+    }
+  }
+  for (let i = 0; i < size * size / 3; i++) {               // feine Körnchen
+    const v = 175 + Math.floor(rand() * 80);
+    g.fillStyle = 'rgb(' + v + ',' + v + ',' + v + ')';
+    g.fillRect(Math.floor(rand() * size), Math.floor(rand() * size), 1, 1);
+  }
+}
+
+// Eine Hauswand mit einem Fenster und Fensterläden (wird über die ganze Wand wiederholt)
+function paintWindow(g, s, rand) {
+  paintNoise(g, s, rand);
+  g.fillStyle = 'rgba(255,255,255,0.55)';
+  g.fillRect(0, 0, s, s);
+  const wx = s * 0.36, ww = s * 0.28, wy = s * 0.2, wh = s * 0.46;   // Fenster
+  g.fillStyle = '#4c6a4a';                                  // grüne Fensterläden, typisch Schweiz
+  g.fillRect(wx - s * 0.13, wy, s * 0.12, wh);
+  g.fillRect(wx + ww + s * 0.01, wy, s * 0.12, wh);
+  g.fillStyle = '#f2f2f2';                                  // Rahmen
+  g.fillRect(wx - 3, wy - 3, ww + 6, wh + 6);
+  const glass = g.createLinearGradient(0, wy, 0, wy + wh);
+  glass.addColorStop(0, '#9cc3e6'); glass.addColorStop(1, '#2c3f58');
+  g.fillStyle = glass;
+  g.fillRect(wx, wy, ww, wh);
+  g.fillStyle = '#f2f2f2';                                  // Fensterkreuz
+  g.fillRect(wx + ww / 2 - 1.5, wy, 3, wh);
+  g.fillRect(wx, wy + wh * 0.4, ww, 3);
+  g.fillStyle = '#bdbdbd';                                  // Fensterbank
+  g.fillRect(wx - 5, wy + wh + 2, ww + 10, 5);
+}
+
+// Dachziegel in Reihen
+function paintRoofTiles(g, s, rand) {
+  const rows = 4, cols = 4, w = s / cols, h = s / rows;
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const v = 200 + Math.floor(rand() * 55);
+      const x = c * w + (r % 2) * w / 2;
+      g.fillStyle = 'rgb(' + v + ',' + v + ',' + v + ')';
+      g.fillRect(x, r * h, w, h);
+      g.fillRect(x - s, r * h, w, h);                        // was rechts rausragt, kommt links wieder rein
+      g.fillStyle = 'rgba(0,0,0,0.25)';
+      g.fillRect(x, r * h, 2, h);
+      g.fillRect(x - s, r * h, 2, h);
+    }
+    g.fillStyle = 'rgba(0,0,0,0.35)';                        // Schattenkante unter jeder Reihe
+    g.fillRect(0, r * h + h - 4, s, 4);
+  }
+}
+
+const TEX = {
+  noise: makeTexture(256, paintNoise),
+  window: makeTexture(128, paintWindow),
+  roof: makeTexture(128, paintRoofTiles),
+};
 
 // ---------- Hilfen: Farben und Formen zu einem grossen Klotz zusammenbauen ----------
 // Viele kleine Teile einzeln zu zeichnen ist langsam. Darum sammeln wir sie in einem »Baukasten«.
-function makeBuilder() { return { positions: [], colors: [] }; }
+function makeBuilder() { return { positions: [], colors: [], uvs: [] }; }
 
 function addToBuilder(builder, geometry, color) {
   const geo = geometry.index ? geometry.toNonIndexed() : geometry;
@@ -858,12 +980,33 @@ function addToBuilder(builder, geometry, color) {
   }
 }
 
-function builderToMesh(builder) {
+// Ein Dreieck mit Farbe; uv(x, y, z) sagt, welcher Teil der Textur auf diese Ecke kommt
+function addTriangle(builder, a, b, c, color, uv) {
+  for (const p of [a, b, c]) {
+    builder.positions.push(p.x, p.y, p.z);
+    builder.colors.push(color.r, color.g, color.b);
+    const [u, v] = uv(p);
+    builder.uvs.push(u, v);
+  }
+}
+
+// Ohne eigene uv-Werte wird die Textur von oben auf den Boden gelegt, alle »metersPerTile« Meter einmal
+function builderToMesh(builder, options = {}) {
   const geo = new THREE.BufferGeometry();
   geo.setAttribute('position', new THREE.Float32BufferAttribute(builder.positions, 3));
   geo.setAttribute('color', new THREE.Float32BufferAttribute(builder.colors, 3));
+  if (!builder.uvs.length && options.metersPerTile) {
+    for (let i = 0; i < builder.positions.length; i += 3) {
+      builder.uvs.push(builder.positions[i] / options.metersPerTile, builder.positions[i + 2] / options.metersPerTile);
+    }
+  }
+  if (builder.uvs.length) geo.setAttribute('uv', new THREE.Float32BufferAttribute(builder.uvs, 2));
   geo.computeVertexNormals();
-  return new THREE.Mesh(geo, new THREE.MeshLambertMaterial({ vertexColors: true }));
+  const Material = options.shiny ? THREE.MeshPhongMaterial : THREE.MeshLambertMaterial;
+  const mesh = new THREE.Mesh(geo, new Material({ vertexColors: true, map: options.texture || null, side: options.side || THREE.FrontSide, ...(options.material || {}) }));
+  mesh.receiveShadow = true;
+  mesh.castShadow = !!options.castShadow;
+  return mesh;
 }
 
 // Liste [x1, z1, x2, z2, ...] in Punkte umwandeln
@@ -886,21 +1029,42 @@ function flatShape(points, height) {
 const MAP = KARTE;
 const AREA_COLORS = { wiese: SETTINGS.colors.meadow, wald: SETTINGS.colors.forestFloor, acker: SETTINGS.colors.field,
   wasser: SETTINGS.colors.water, platz: SETTINGS.colors.square, wohnen: SETTINGS.colors.garden };
+const AREA_ORDER = ['acker', 'wohnen', 'wiese', 'wald', 'platz', 'wasser'];   // was später kommt, liegt oben
 
 function buildGround() {
   const size = Math.max(MAP.width, MAP.depth) * 3;
-  const ground = new THREE.Mesh(new THREE.PlaneGeometry(size, size), new THREE.MeshLambertMaterial({ color: SETTINGS.colors.grass }));
+  const groundTexture = TEX.noise.clone();
+  groundTexture.needsUpdate = true;
+  groundTexture.repeat.set(size / 8, size / 8);
+  const ground = new THREE.Mesh(new THREE.PlaneGeometry(size, size), new THREE.MeshLambertMaterial({ color: SETTINGS.colors.grass, map: groundTexture }));
   ground.rotation.x = -Math.PI / 2;
+  ground.position.set(MAP.width / 2, 0, MAP.depth / 2);
+  ground.receiveShadow = true;
   scene.add(ground);
   const builder = makeBuilder();
+  const waterBuilder = makeBuilder();
   // Grosse Flächen zuerst, damit kleine darüber liegen
-  const order = ['acker', 'wohnen', 'wiese', 'wald', 'platz', 'wasser'];
   for (const area of MAP.areas) {
-    const layer = order.indexOf(area[0]);
+    const layer = AREA_ORDER.indexOf(area[0]);
     if (layer < 0) continue;
-    addToBuilder(builder, flatShape(toPoints(area, 1), 0.02 + layer * 0.02), AREA_COLORS[area[0]]);
+    const target = area[0] === 'wasser' ? waterBuilder : builder;
+    addToBuilder(target, flatShape(toPoints(area, 1), 0.02 + layer * 0.02), AREA_COLORS[area[0]]);
   }
-  scene.add(builderToMesh(builder));
+  scene.add(builderToMesh(builder, { texture: TEX.noise, metersPerTile: 8 }));
+  scene.add(buildWater(waterBuilder));
+}
+
+// ---------- Wasser: glänzt in der Sonne und bewegt sich leicht ----------
+const waterTexture = TEX.noise.clone();
+waterTexture.needsUpdate = true;
+
+function buildWater(builder) {
+  return builderToMesh(builder, { texture: waterTexture, metersPerTile: 14, shiny: true,
+    material: { specular: '#ffffff', shininess: 90, transparent: true, opacity: 0.92 } });
+}
+
+function updateWater(t) {
+  waterTexture.offset.set(t * 0.01, t * 0.006);              // langsam treibende Wellen
 }
 
 // ---------- Welt bauen: Strassen, Wege, Bäche und Gleise ----------
@@ -931,7 +1095,8 @@ function ribbon(builder, points, width, height, color) {
 
 function buildRoads() {
   const builder = makeBuilder();
-  for (const river of MAP.rivers) ribbon(builder, toPoints(river, 1), river[0], 0.12, SETTINGS.colors.water);
+  const waterBuilder = makeBuilder();
+  for (const river of MAP.rivers) ribbon(waterBuilder, toPoints(river, 1), river[0], 0.12, SETTINGS.colors.water);
   for (const road of MAP.roads) {
     const style = ROAD_STYLES[road[0]];
     ribbon(builder, toPoints(road, 1), style.width, style.height, style.color);
@@ -940,55 +1105,173 @@ function buildRoads() {
     ribbon(builder, toPoints(rail), 3, 0.17, SETTINGS.colors.railBed);
     ribbon(builder, toPoints(rail), 1.6, 0.18, SETTINGS.colors.rail);
   }
-  const mesh = builderToMesh(builder);
-  mesh.geometry.computeVertexNormals();
-  scene.add(mesh);
+  scene.add(builderToMesh(builder, { texture: TEX.noise, metersPerTile: 5 }));
+  scene.add(buildWater(waterBuilder));
 }
 
 // ---------- Welt bauen: Häuser als Klötze ----------
 const WALL_COLORS = ['#fff3dc', '#ffe0b8', '#ffffff', '#dcecff', '#ffd6d6', '#e3f7d5'];
 const ROOF_COLORS = ['#b8503a', '#8d4a3a', '#6c6f78', '#a5603f'];
 
-function buildHouses() {
-  const builder = makeBuilder();
-  MAP.buildings.forEach((b, i) => {
-    const points = toPoints(b, 1);
-    const shape = new THREE.Shape(points.map(p => new THREE.Vector2(p.x, -p.z)));
-    const geo = new THREE.ExtrudeGeometry(shape, { depth: b[0], bevelEnabled: false });
-    geo.rotateX(-Math.PI / 2);
-    const isGoal = i === MAP.goalBuilding;
-    const wall = isGoal ? SETTINGS.colors.goalHall : WALL_COLORS[i % WALL_COLORS.length];
-    const roof = isGoal ? SETTINGS.colors.goalRoof : ROOF_COLORS[i % ROOF_COLORS.length];
-    const flat = geo.index ? geo.toNonIndexed() : geo;
-    flat.computeVertexNormals();
-    const pos = flat.attributes.position.array, nor = flat.attributes.normal.array;
-    const cw = new THREE.Color(wall), cr = new THREE.Color(roof);
-    for (let k = 0; k < pos.length; k += 3) {
-      builder.positions.push(pos[k], pos[k + 1], pos[k + 2]);
-      const c = nor[k + 1] > 0.5 ? cr : cw;                // nach oben zeigt = Dach
-      builder.colors.push(c.r, c.g, c.b);
-    }
-  });
-  scene.add(builderToMesh(builder));
+// Fenster auf die Wände: u geht der Wand entlang, v nach oben
+function wallUV(a, b, c) {
+  const n = new THREE.Vector3().subVectors(b, a).cross(new THREE.Vector3().subVectors(c, a));
+  const len = Math.hypot(n.x, n.z) || 1;
+  const nx = n.x / len, nz = n.z / len;
+  return p => [(p.x * -nz + p.z * nx) / SETTINGS.windowSpacing, p.y / SETTINGS.floorHeight];
 }
 
-// ---------- Welt bauen: Klötzchen-Bäume ----------
-function buildTrees() {
-  const trees = MAP.trees;
-  const count = trees.length / 2;
-  const trunk = new THREE.InstancedMesh(new THREE.BoxGeometry(0.7, 3, 0.7), new THREE.MeshLambertMaterial({ color: '#7a5230' }), count);
-  const leaves = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshLambertMaterial({ color: '#ffffff' }), count);
-  const m = new THREE.Matrix4(), color = new THREE.Color();
-  for (let i = 0; i < count; i++) {
-    const x = trees[i * 2], z = trees[i * 2 + 1];
-    const size = 3.5 + (i * 7919 % 100) / 40;          // jeder Baum etwas anders gross
-    m.makeTranslation(x, 1.5, z);
-    trunk.setMatrixAt(i, m);
-    m.makeScale(size, size, size).setPosition(x, 3 + size / 2, z);
-    leaves.setMatrixAt(i, m);
-    leaves.setColorAt(i, color.set(SETTINGS.colors.leaves[i % SETTINGS.colors.leaves.length]));
+// Hausklotz: Wände bekommen Fenster, ein flaches Dach (falls kein Giebeldach) bekommt Kies
+function addHouseBlock(builders, points, height, wall, roof, withFlatRoof) {
+  const shape = new THREE.Shape(points.map(p => new THREE.Vector2(p.x, -p.z)));
+  const geo = new THREE.ExtrudeGeometry(shape, { depth: height, bevelEnabled: false });
+  geo.rotateX(-Math.PI / 2);
+  const pos = (geo.index ? geo.toNonIndexed() : geo).attributes.position.array;
+  for (let k = 0; k < pos.length; k += 9) {
+    const [a, b, c] = [0, 3, 6].map(o => new THREE.Vector3(pos[k + o], pos[k + o + 1], pos[k + o + 2]));
+    const up = new THREE.Vector3().subVectors(b, a).cross(new THREE.Vector3().subVectors(c, a)).normalize().y;
+    if (up < -0.5) continue;                                 // Boden des Hauses sieht man nie
+    if (up > 0.5) {
+      if (withFlatRoof) addTriangle(builders.flat, a, b, c, roof, p => [p.x / 6, p.z / 6]);
+    } else {
+      addTriangle(builders.walls, a, b, c, wall, wallUV(a, b, c));
+    }
   }
-  scene.add(trunk, leaves);
+}
+
+// Giebeldach für Häuser mit vier Ecken: zwei schräge Flächen und zwei dreieckige Giebelwände
+function addGableRoof(builders, pts, height, wall, roof) {
+  const d = (a, b) => Math.hypot(b.x - a.x, b.z - a.z);
+  if (d(pts[0], pts[1]) + d(pts[2], pts[3]) < d(pts[1], pts[2]) + d(pts[3], pts[0])) pts = [pts[1], pts[2], pts[3], pts[0]];
+  const [p0, p1, p2, p3] = pts;                            // p0-p1 und p2-p3 sind die langen Seiten
+  const shortSide = (d(p1, p2) + d(p3, p0)) / 2;
+  const rise = Math.min(6, shortSide * SETTINGS.roofSteepness);
+  const mid = (a, b) => ({ x: (a.x + b.x) / 2, z: (a.z + b.z) / 2 });
+  const center = mid(mid(p0, p1), mid(p2, p3));
+  const v = (p, y) => new THREE.Vector3(p.x, y, p.z);
+  const ridgeA = mid(p3, p0), ridgeB = mid(p1, p2);
+  // Giebelwände (Dreiecke) unter dem Dach
+  addTriangle(builders.walls, v(p1, height), v(p2, height), v(ridgeB, height + rise), wall, wallUV(v(p1, height), v(p2, height), v(ridgeB, height + rise)));
+  addTriangle(builders.walls, v(p3, height), v(p0, height), v(ridgeA, height + rise), wall, wallUV(v(p3, height), v(p0, height), v(ridgeA, height + rise)));
+  // Dachfläche ragt etwas über die Wände hinaus (Vordach)
+  const out = (p, by) => {
+    const dx = p.x - center.x, dz = p.z - center.z, l = Math.hypot(dx, dz) || 1;
+    return { x: p.x + dx / l * by, z: p.z + dz / l * by };
+  };
+  const e0 = out(p0, 0.7), e1 = out(p1, 0.7), e2 = out(p2, 0.7), e3 = out(p3, 0.7);
+  const rA = out(ridgeA, 0.5), rB = out(ridgeB, 0.5);
+  const top = height + rise + 0.05, eave = height - 0.25;
+  const along = { x: (ridgeB.x - ridgeA.x) / (d(ridgeA, ridgeB) || 1), z: (ridgeB.z - ridgeA.z) / (d(ridgeA, ridgeB) || 1) };
+  const tileUV = p => [(p.x * along.x + p.z * along.z) / 1.6,
+    Math.abs((p.x - ridgeA.x) * -along.z + (p.z - ridgeA.z) * along.x) / 1.6];
+  for (const [a, b, c, e] of [[e0, e1, rB, rA], [e2, e3, rA, rB]]) {
+    addTriangle(builders.roofs, v(a, eave), v(b, eave), v(c, top), roof, tileUV);
+    addTriangle(builders.roofs, v(a, eave), v(c, top), v(e, top), roof, tileUV);
+  }
+}
+
+function buildHouses() {
+  const builders = { walls: makeBuilder(), roofs: makeBuilder(), flat: makeBuilder() };
+  MAP.buildings.forEach((b, i) => {
+    const points = toPoints(b, 1);
+    const isGoal = i === MAP.goalBuilding;
+    const wall = new THREE.Color(isGoal ? SETTINGS.colors.goalHall : WALL_COLORS[i % WALL_COLORS.length]);
+    const roof = new THREE.Color(isGoal ? SETTINGS.colors.goalRoof : ROOF_COLORS[i % ROOF_COLORS.length]);
+    const gable = points.length === 4 && b[0] <= 13.5 && !isGoal;   // kleine Häuser mit 4 Ecken bekommen ein Giebeldach
+    addHouseBlock(builders, points, b[0], wall, roof, !gable);
+    if (gable) addGableRoof(builders, points, b[0], wall, roof);
+  });
+  const both = THREE.DoubleSide;
+  scene.add(builderToMesh(builders.walls, { texture: TEX.window, castShadow: true, side: both }));
+  scene.add(builderToMesh(builders.roofs, { texture: TEX.roof, castShadow: true, side: both }));
+  scene.add(builderToMesh(builders.flat, { texture: TEX.noise, castShadow: true, side: both }));
+}
+
+// ---------- Welt bauen: Bäume ----------
+// Laubbaum-Krone: ein paar Kugeln zusammen, leicht verbeult. Tanne: drei Kegel übereinander.
+function crownGeometry() {
+  const rand = makeRandom(7);
+  const parts = [[0, 0, 0, 1], [0.55, -0.25, 0.3, 0.72], [-0.5, -0.2, -0.35, 0.75], [0.1, 0.45, -0.2, 0.7]];
+  const geos = parts.map(([x, y, z, r]) => {
+    const g = new THREE.IcosahedronGeometry(r, 1);
+    const p = g.attributes.position;
+    for (let i = 0; i < p.count; i++) p.setXYZ(i, p.getX(i) * (0.9 + rand() * 0.2) + x, p.getY(i) * (0.9 + rand() * 0.2) + y, p.getZ(i) * (0.9 + rand() * 0.2) + z);
+    return g;
+  });
+  return mergeGeometries(geos);
+}
+
+function pineGeometry() {
+  const geos = [[1, 1.4, 0.9], [0.78, 1.2, 1.7], [0.55, 1.0, 2.4]].map(([r, h, y]) => {
+    const g = new THREE.ConeGeometry(r, h, 8);
+    g.translate(0, y, 0);
+    return g;
+  });
+  return mergeGeometries(geos);
+}
+
+// Mehrere Formen zu einer zusammenkleben
+function mergeGeometries(geos) {
+  const builder = makeBuilder();
+  for (const g of geos) addToBuilder(builder, g, '#ffffff');
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(builder.positions, 3));
+  geo.computeVertexNormals();
+  return geo;
+}
+
+// Alle Baumstandorte sammeln: Bäume aus der Karte, Wald und Kirschbäume auf den Wiesen
+function collectTrees() {
+  const list = [];                                           // [x, z, Art, Grösse]
+  const rand = makeRandom(42);
+  for (let i = 0; i < MAP.trees.length; i += 2) list.push([MAP.trees[i], MAP.trees[i + 1], 'laub', 0.8 + rand() * 0.6]);
+  const scatter = (area, spacing, kind) => {
+    const poly = toPoints(area, 1);
+    const xs = poly.map(p => p.x), zs = poly.map(p => p.z);
+    for (let x = Math.min(...xs); x < Math.max(...xs); x += spacing) {
+      for (let z = Math.min(...zs); z < Math.max(...zs); z += spacing) {
+        const tx = x + (rand() - 0.5) * spacing * 0.8, tz = z + (rand() - 0.5) * spacing * 0.8;
+        if (!insidePolygon(tx, tz, poly) || insideSolid(tx, tz) || onRoad(tx, tz, 2)) continue;
+        list.push([tx, tz, kind === 'wald' ? (rand() < 0.65 ? 'tanne' : 'laub') : kind, 0.8 + rand() * 0.6]);
+      }
+    }
+  };
+  for (const area of MAP.areas) {
+    if (area[0] === 'wald') scatter(area, SETTINGS.forestTreeSpacing, 'wald');
+    if (area[0] === 'wiese') scatter(area, SETTINGS.orchardTreeSpacing, 'kirsche');
+  }
+  return list;
+}
+
+function buildTrees() {
+  const trees = collectTrees();
+  const c = SETTINGS.colors;
+  const leafy = trees.filter(t => t[2] !== 'tanne'), pines = trees.filter(t => t[2] === 'tanne');
+  const shadowy = mesh => { mesh.castShadow = true; mesh.receiveShadow = true; scene.add(mesh); return mesh; };
+  const trunkGeo = new THREE.CylinderGeometry(0.18, 0.3, 1, 6);
+  trunkGeo.translate(0, 0.5, 0);
+  const trunks = shadowy(new THREE.InstancedMesh(trunkGeo, new THREE.MeshLambertMaterial({ color: c.trunk }), trees.length));
+  const crowns = shadowy(new THREE.InstancedMesh(crownGeometry(), new THREE.MeshLambertMaterial({ color: '#ffffff', flatShading: true }), leafy.length));
+  const pineMesh = shadowy(new THREE.InstancedMesh(pineGeometry(), new THREE.MeshLambertMaterial({ color: '#ffffff', flatShading: true }), pines.length));
+  const m = new THREE.Matrix4(), q = new THREE.Quaternion(), color = new THREE.Color(), up = new THREE.Vector3(0, 1, 0);
+  const place = (mesh, i, x, y, z, sx, sy, turn) => {
+    q.setFromAxisAngle(up, turn);
+    mesh.setMatrixAt(i, m.compose(new THREE.Vector3(x, y, z), q, new THREE.Vector3(sx, sy, sx)));
+  };
+  let li = 0, pi = 0;
+  trees.forEach(([x, z, kind, s], i) => {
+    const turn = (x * 13 + z * 7) % 6.28;
+    if (kind === 'tanne') {
+      place(trunks, i, x, 0, z, s * 1.3, s * 3, turn);
+      place(pineMesh, pi, x, s * 1.5, z, s * 2.6, s * 4.2, turn);
+      pineMesh.setColorAt(pi++, color.set(c.pine[i % c.pine.length]));
+    } else {
+      const small = kind === 'kirsche' ? 0.75 : 1;           // Kirschbäume sind kleiner
+      place(trunks, i, x, 0, z, s * small, s * small * 3.2, turn);
+      place(crowns, li, x, s * small * 4.4, z, s * small * 2.6, s * small * 2.2, turn);
+      crowns.setColorAt(li++, color.set((kind === 'kirsche' ? c.cherry : c.leaves)[i % 3]).multiplyScalar(0.85 + (i % 5) * 0.06));
+    }
+  });
 }
 
 // ---------- Schilder: Text, der über der Welt schwebt ----------
@@ -1059,6 +1342,7 @@ function buildHorse() {
     legs.push(hip);
   }
   horse.userData.legs = legs;
+  horse.traverse(part => { part.castShadow = true; });
   scene.add(horse);
   return horse;
 }
@@ -1107,15 +1391,306 @@ function insidePolygon(x, z, poly) {
   return inside;
 }
 
+// Steht an diesem Punkt ein Haus oder ist hier der See?
+function insideSolid(x, z) {
+  for (const i of solidGrid.get(gridKey(x, z)) || []) {
+    if (insidePolygon(x, z, solids[i])) return true;
+  }
+  return false;
+}
+
 function isBlocked(x, z) {
   if (x < 0 || z < 0 || x > MAP.width || z > MAP.depth) return true;   // Rand der Karte
   const r = SETTINGS.horseRadius;
   for (const [dx, dz] of [[0, 0], [r, 0], [-r, 0], [0, r], [0, -r]]) {
-    for (const i of solidGrid.get(gridKey(x + dx, z + dz)) || []) {
-      if (insidePolygon(x + dx, z + dz, solids[i])) return true;
-    }
+    if (insideSolid(x + dx, z + dz)) return true;
   }
   return false;
+}
+
+// ---------- Strassen und Flächen nachschlagen (für Gras, Bäume und Zäune) ----------
+const roadGrid = new Map();     // Feld -> Strassenstücke darin
+const areaGrid = new Map();     // Feld -> Flächen darin
+
+function addToGrid(grid, minX, minZ, maxX, maxZ, item) {
+  for (let gx = Math.floor(minX / GRID); gx <= Math.floor(maxX / GRID); gx++) {
+    for (let gz = Math.floor(minZ / GRID); gz <= Math.floor(maxZ / GRID); gz++) {
+      const k = gx + ',' + gz;
+      if (!grid.has(k)) grid.set(k, []);
+      grid.get(k).push(item);
+    }
+  }
+}
+
+function buildLookupGrids() {
+  const addLine = (pts, width) => {
+    for (let i = 0; i < pts.length - 1; i++) {
+      const a = pts[i], b = pts[i + 1], half = width / 2;
+      addToGrid(roadGrid, Math.min(a.x, b.x) - half - 3, Math.min(a.z, b.z) - half - 3,
+        Math.max(a.x, b.x) + half + 3, Math.max(a.z, b.z) + half + 3, { a, b, half });
+    }
+  };
+  for (const road of MAP.roads) addLine(toPoints(road, 1), ROAD_STYLES[road[0]].width);
+  for (const river of MAP.rivers) addLine(toPoints(river, 1), river[0]);
+  for (const rail of MAP.rails) addLine(toPoints(rail), 3);
+  for (const area of MAP.areas) {
+    const poly = toPoints(area, 1), xs = poly.map(p => p.x), zs = poly.map(p => p.z);
+    addToGrid(areaGrid, Math.min(...xs), Math.min(...zs), Math.max(...xs), Math.max(...zs), { type: area[0], poly });
+  }
+}
+
+// Ist dieser Punkt auf (oder näher als »margin« Meter an) einer Strasse, einem Bach oder Gleis?
+function onRoad(x, z, margin = 0.3) {
+  for (const { a, b, half } of roadGrid.get(gridKey(x, z)) || []) {
+    const dx = b.x - a.x, dz = b.z - a.z;
+    const t = Math.max(0, Math.min(1, ((x - a.x) * dx + (z - a.z) * dz) / (dx * dx + dz * dz || 1)));
+    if (Math.hypot(x - a.x - t * dx, z - a.z - t * dz) < half + margin) return true;
+  }
+  return false;
+}
+
+// Welche Fläche liegt hier oben? ('wiese', 'wald', 'platz' ... oder '' für normales Gras)
+function areaAt(x, z) {
+  let best = '', bestLayer = -1;
+  for (const { type, poly } of areaGrid.get(gridKey(x, z)) || []) {
+    const layer = AREA_ORDER.indexOf(type);
+    if (layer > bestLayer && insidePolygon(x, z, poly)) { best = type; bestLayer = layer; }
+  }
+  return best;
+}
+
+// ---------- Gras und Blumen rund ums Pferd ----------
+// Die Welt ist in Gras-Felder von 20 m geteilt. Gras wächst nur in den Feldern nahe beim Pferd,
+// sonst wäre es zu viel für den Laptop. Reitest du weiter, wächst es vor dir neu.
+const GRASS_CHUNK = 20;
+const grassCache = new Map();
+let grassMesh, flowerMesh, grassCenter = '';
+
+function tuftGeometry() {
+  const rand = makeRandom(3);
+  const pos = [], col = [], nor = [];
+  for (let i = 0; i < 14; i++) {                             // 14 Halme pro Büschel
+    const angle = rand() * Math.PI * 2, r = rand() * 0.45, h = 0.2 + rand() * 0.3, w = 0.045;
+    const x = Math.cos(angle) * r, z = Math.sin(angle) * r;
+    const sx = Math.cos(angle + 1.6) * w, sz = Math.sin(angle + 1.6) * w;
+    const lean = (rand() - 0.5) * 0.3;
+    pos.push(x - sx, 0, z - sz, x + sx, 0, z + sz, x + lean, h, z + lean);
+    col.push(0.7, 0.75, 0.65, 0.7, 0.75, 0.65, 1, 1, 0.92);  // unten etwas dunkler, Spitze hell
+    nor.push(0, 1, 0, 0, 1, 0, 0, 1, 0);                    // Licht wie beim Boden
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  geo.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+  geo.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3));
+  return geo;
+}
+
+// Alle Büschel in einem Gras-Feld: immer gleich, darum merken wir sie uns
+function grassInChunk(cx, cz) {
+  const key = cx + ',' + cz;
+  if (grassCache.has(key)) return grassCache.get(key);
+  const rand = makeRandom(cx * 7349 + cz * 92821 + 11);
+  const list = [];
+  const count = Math.round(GRASS_CHUNK * GRASS_CHUNK * SETTINGS.grassPerSquareMeter);
+  const c = SETTINGS.colors;
+  for (let i = 0; i < count; i++) {
+    const x = (cx + rand()) * GRASS_CHUNK, z = (cz + rand()) * GRASS_CHUNK;
+    const size = 0.8 + rand() * 0.7, turn = rand() * 6.28, shade = 0.88 + rand() * 0.22, flowerRoll = rand();
+    if (x < 0 || z < 0 || x > MAP.width || z > MAP.depth) continue;
+    if (insideSolid(x, z) || onRoad(x, z)) continue;
+    const area = areaAt(x, z);
+    if (area === 'platz') continue;
+    const color = new THREE.Color(area === 'acker' ? c.field : area === 'wald' ? c.forestFloor : c.grassBlade).multiplyScalar(shade);
+    const flower = flowerRoll < SETTINGS.flowerShare && area !== 'wald' && area !== 'acker'
+      ? c.flowers[Math.floor(flowerRoll * 1000) % c.flowers.length] : null;
+    list.push({ x, z, size, turn, color, flower });
+  }
+  grassCache.set(key, list);
+  return list;
+}
+
+function buildGrass() {
+  const side = SETTINGS.grassRadius * 2 + 1;
+  const max = side * side * Math.round(GRASS_CHUNK * GRASS_CHUNK * SETTINGS.grassPerSquareMeter);
+  grassMesh = new THREE.InstancedMesh(tuftGeometry(), new THREE.MeshLambertMaterial({ vertexColors: true, side: THREE.DoubleSide }), max);
+  grassMesh.receiveShadow = true;
+  grassMesh.setColorAt(0, new THREE.Color());              // Farbspeicher anlegen
+  const head = new THREE.OctahedronGeometry(0.09);
+  flowerMesh = new THREE.InstancedMesh(head, new THREE.MeshLambertMaterial({ color: '#ffffff' }), Math.ceil(max * SETTINGS.flowerShare * 2) + 10);
+  flowerMesh.setColorAt(0, new THREE.Color());
+  grassMesh.frustumCulled = flowerMesh.frustumCulled = false;
+  scene.add(grassMesh, flowerMesh);
+}
+
+// Wenn das Pferd in ein neues Gras-Feld reitet: Gras rundherum neu verteilen
+function updateGrass() {
+  const h = game.horse;
+  const cx = Math.floor(h.x / GRASS_CHUNK), cz = Math.floor(h.z / GRASS_CHUNK);
+  if (cx + ',' + cz === grassCenter) return;
+  grassCenter = cx + ',' + cz;
+  const m = new THREE.Matrix4(), q = new THREE.Quaternion(), up = new THREE.Vector3(0, 1, 0);
+  let n = 0, f = 0;
+  const R = SETTINGS.grassRadius;
+  for (let gx = cx - R; gx <= cx + R; gx++) {
+    for (let gz = cz - R; gz <= cz + R; gz++) {
+      for (const t of grassInChunk(gx, gz)) {
+        // am Rand des Gras-Bereichs werden die Büschel kleiner, so gibt es keine harte Kante
+        const edge = Math.max(Math.abs(t.x - (cx + 0.5) * GRASS_CHUNK), Math.abs(t.z - (cz + 0.5) * GRASS_CHUNK)) / ((R + 0.5) * GRASS_CHUNK);
+        const size = t.size * Math.min(1, (1 - edge) * 3.5);
+        if (size <= 0.05) continue;
+        q.setFromAxisAngle(up, t.turn);
+        grassMesh.setMatrixAt(n, m.compose(new THREE.Vector3(t.x, 0.15, t.z), q, new THREE.Vector3(size, size, size)));
+        grassMesh.setColorAt(n++, t.color);
+        if (t.flower && f < flowerMesh.instanceMatrix.count) {
+          flowerMesh.setMatrixAt(f, m.makeTranslation(t.x, 0.15 + 0.45 * size, t.z));
+          flowerMesh.setColorAt(f++, new THREE.Color(t.flower));
+        }
+      }
+    }
+  }
+  grassMesh.count = n;
+  flowerMesh.count = f;
+  grassMesh.instanceMatrix.needsUpdate = grassMesh.instanceColor.needsUpdate = true;
+  flowerMesh.instanceMatrix.needsUpdate = flowerMesh.instanceColor.needsUpdate = true;
+}
+
+// ---------- Holzzäune um die Weiden ----------
+function buildFences() {
+  const posts = [], rails = [];                              // Pfosten: [x, z] · Latten: [x, z, Länge, Winkel]
+  for (const area of MAP.areas) {
+    if (area[0] !== 'wiese') continue;
+    const poly = toPoints(area, 1);
+    for (let i = 0; i < poly.length; i++) {
+      const a = poly[i], b = poly[(i + 1) % poly.length];
+      const len = Math.hypot(b.x - a.x, b.z - a.z);
+      const steps = Math.max(1, Math.round(len / SETTINGS.fencePostSpacing));
+      for (let s = 0; s < steps; s++) {
+        const x1 = a.x + (b.x - a.x) * s / steps, z1 = a.z + (b.z - a.z) * s / steps;
+        const x2 = a.x + (b.x - a.x) * (s + 1) / steps, z2 = a.z + (b.z - a.z) * (s + 1) / steps;
+        if (onRoad(x1, z1, 0.5) || onRoad(x2, z2, 0.5) || insideSolid(x1, z1)) continue;  // Lücke bei Wegen
+        posts.push([x1, z1]);
+        rails.push([(x1 + x2) / 2, (z1 + z2) / 2, len / steps, Math.atan2(x2 - x1, z2 - z1)]);
+      }
+    }
+  }
+  const wood = new THREE.MeshLambertMaterial({ color: SETTINGS.colors.fence });
+  const postMesh = new THREE.InstancedMesh(new THREE.BoxGeometry(0.16, 1.3, 0.16), wood, posts.length);
+  const railMesh = new THREE.InstancedMesh(new THREE.BoxGeometry(0.06, 0.12, 1), wood, rails.length * 2);
+  const m = new THREE.Matrix4(), q = new THREE.Quaternion(), up = new THREE.Vector3(0, 1, 0);
+  posts.forEach(([x, z], i) => postMesh.setMatrixAt(i, m.makeTranslation(x, 0.65, z)));
+  rails.forEach(([x, z, len, angle], i) => {
+    q.setFromAxisAngle(up, angle);
+    for (const [k, y] of [[0, 0.55], [1, 1.05]]) railMesh.setMatrixAt(i * 2 + k, m.compose(new THREE.Vector3(x, y, z), q, new THREE.Vector3(1, 1, len)));
+  });
+  postMesh.castShadow = railMesh.castShadow = true;
+  scene.add(postMesh, railMesh);
+}
+
+// ---------- Himmel, Sonne, Berge und Wolken ----------
+// Alles hier ist sehr weit weg. Darum reist es mit der Kamera mit, wie eine riesige Kulisse.
+const SKY_RADIUS = SETTINGS.viewDistance + 20;
+let skyGroup, cloudGroup;
+
+function buildSkyDome() {
+  const geo = new THREE.SphereGeometry(SKY_RADIUS, 32, 16);
+  const low = new THREE.Color(SETTINGS.colors.sky), high = new THREE.Color(SETTINGS.colors.skyTop);
+  const p = geo.attributes.position, colors = [];
+  for (let i = 0; i < p.count; i++) {
+    const t = Math.pow(Math.max(0, p.getY(i) / SKY_RADIUS), 0.6);   // 0 am Horizont, 1 ganz oben
+    const c = low.clone().lerp(high, t);
+    colors.push(c.r, c.g, c.b);
+  }
+  geo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+  const dome = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.BackSide, fog: false, depthWrite: false }));
+  dome.renderOrder = -2;
+  return dome;
+}
+
+function buildSunDisc() {
+  const c = document.createElement('canvas');
+  c.width = c.height = 128;
+  const g = c.getContext('2d');
+  const glow = g.createRadialGradient(64, 64, 4, 64, 64, 64);
+  glow.addColorStop(0, 'rgba(255,255,240,1)'); glow.addColorStop(0.15, 'rgba(255,250,220,1)');
+  glow.addColorStop(0.3, 'rgba(255,240,200,0.35)'); glow.addColorStop(1, 'rgba(255,240,200,0)');
+  g.fillStyle = glow; g.fillRect(0, 0, 128, 128);
+  const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(c), fog: false, depthWrite: false, transparent: true }));
+  sprite.position.copy(sunDir).multiplyScalar(SKY_RADIUS * 0.9);
+  sprite.scale.set(110, 110, 1);
+  sprite.renderOrder = -1;
+  return sprite;
+}
+
+// Die Alpen liegen im Süden, darum sind die Berge dort höher und haben Schnee
+function buildMountains() {
+  const rand = makeRandom(1291);
+  const builder = makeBuilder();
+  const rock = new THREE.Color(SETTINGS.colors.mountain), snow = new THREE.Color(SETTINGS.colors.snow);
+  const haze = new THREE.Color(SETTINGS.colors.sky);
+  for (let i = 0; i < SETTINGS.mountainCount; i++) {
+    const angle = (i / SETTINGS.mountainCount) * Math.PI * 2 + rand() * 0.15;
+    const south = Math.max(0, Math.cos(angle));             // 1 = genau im Süden
+    const height = 14 + rand() * 16 + south * (18 + rand() * 30);
+    const width = 70 + rand() * 70;
+    const dist = SKY_RADIUS * (0.84 + rand() * 0.1);
+    const geo = new THREE.ConeGeometry(width, height, 12, 4);
+    const p = geo.attributes.position;
+    for (let k = 0; k < p.count; k++) {                       // Kegel leicht verbeulen, damit er wie ein Berg aussieht
+      if (p.getY(k) < height / 2 - 0.1) p.setXYZ(k, p.getX(k) * (0.85 + rand() * 0.3), p.getY(k) + rand() * height * 0.06, p.getZ(k) * (0.85 + rand() * 0.3));
+    }
+    geo.translate(Math.sin(angle) * dist, height / 2 - 12, Math.cos(angle) * dist);
+    const flat = geo.index ? geo.toNonIndexed() : geo, pos = flat.attributes.position.array;
+    const farAway = rock.clone().lerp(haze, 0.35 + rand() * 0.25);   // weit weg = bläulicher Dunst
+    for (let k = 0; k < pos.length; k += 3) {
+      builder.positions.push(pos[k], pos[k + 1], pos[k + 2]);
+      const snowy = height > 45 && pos[k + 1] > height * 0.75 - 12;
+      const c = snowy ? snow.clone().lerp(haze, 0.15) : farAway;
+      builder.colors.push(c.r, c.g, c.b);
+    }
+  }
+  const mesh = builderToMesh(builder, { material: { fog: false, emissive: '#222c36' } });
+  mesh.receiveShadow = false;
+  mesh.renderOrder = -1;
+  return mesh;
+}
+
+function buildClouds() {
+  const rand = makeRandom(77);
+  const group = new THREE.Group();
+  const puff = new THREE.IcosahedronGeometry(1, 2);
+  const material = new THREE.MeshLambertMaterial({ color: SETTINGS.colors.cloud, emissive: '#9aa7b8', fog: false });
+  for (let i = 0; i < SETTINGS.cloudCount; i++) {
+    const cloud = new THREE.Group();
+    const parts = 4 + Math.floor(rand() * 5);
+    for (let k = 0; k < parts; k++) {
+      const ball = new THREE.Mesh(puff, material);
+      const s = 8 + rand() * 10;
+      ball.scale.set(s * 1.4, s * 0.7, s);
+      ball.position.set((k - parts / 2) * 9 + rand() * 6, rand() * 5, rand() * 10);
+      cloud.add(ball);
+    }
+    const angle = rand() * Math.PI * 2, dist = SKY_RADIUS * (0.45 + rand() * 0.4);
+    cloud.position.set(Math.sin(angle) * dist, 110 + rand() * 90, Math.cos(angle) * dist);
+    cloud.rotation.y = rand() * 6.28;
+    group.add(cloud);
+  }
+  return group;
+}
+
+function buildSky() {
+  skyGroup = new THREE.Group();
+  cloudGroup = buildClouds();
+  skyGroup.add(buildSkyDome(), buildSunDisc(), buildMountains(), cloudGroup);
+  scene.add(skyGroup);
+}
+
+// Kulisse mit der Kamera mitnehmen, Wolken treiben lassen, Sonnenlicht übers Pferd halten
+function updateSky(t) {
+  skyGroup.position.set(camera.position.x, 0, camera.position.z);
+  cloudGroup.rotation.y = t * 0.004;
+  const h = game.horse;
+  sun.target.position.set(h.x, 0, h.z);
+  sun.position.set(h.x + sunDir.x * 150, sunDir.y * 150, h.z + sunDir.z * 150);
 }
 
 // ---------- Übersichtskarte unten rechts ----------
@@ -1320,18 +1895,25 @@ function loop(now) {
   }
   placeHorseModel();
   updateCamera(dt);
+  updateSky(totalTime);
+  updateWater(totalTime);
+  updateGrass();
   updateHud();
   renderer.render(scene, camera);
   requestAnimationFrame(loop);
 }
 
 // ---------- Los geht's: Welt bauen und Schleife starten ----------
+buildSolidGrid();        // zuerst nachschlagen können, wo Häuser, Strassen und Wiesen sind
+buildLookupGrids();
+buildSky();
 buildGround();
 buildRoads();
 buildHouses();
 buildTrees();
+buildFences();
+buildGrass();
 buildGoal();
-buildSolidGrid();
 drawMinimapBase();
 horseModel = buildHorse();
 carrots = buildCarrots();

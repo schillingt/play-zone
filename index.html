@@ -1,18 +1,267 @@
 <!doctype html>
-<html lang="en">
+<html lang="de">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Play Zone</title>
+<title>Pferde-Kurier Zug</title>
 <style>
-  html, body { margin: 0; height: 100%; background: #12122a; color: #fff; font-family: system-ui, sans-serif; }
-  body { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; }
-  canvas { background: #1d1d45; border-radius: 12px; max-width: 96vw; max-height: 80vh; }
+  :root {
+    --blau: #1b6ec2;
+    --blau-dunkel: #124a85;
+    --creme: #fff8ec;
+    --text: #25304a;
+    --linie: #e6dcc6;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; background: var(--creme); color: var(--text); font-family: system-ui, "Segoe UI", sans-serif; line-height: 1.5; }
+  main { max-width: 1000px; margin: 0 auto; padding: 0 16px 48px; }
+  h2 { font-size: 1.7rem; margin: 40px 0 6px; }
+  p.lead { margin: 0 0 16px; font-size: 1.1rem; }
+
+  /* ---- Kopf ---- */
+  header { background: linear-gradient(135deg, var(--blau), #4aa3e8); color: #fff; padding: 36px 16px 44px; text-align: center; }
+  header h1 { margin: 0; font-size: clamp(2rem, 6vw, 3.4rem); }
+  header p { margin: 10px auto 0; max-width: 640px; font-size: 1.2rem; }
+  .hero-emoji { font-size: 3.4rem; }
+  .badge { display: inline-block; margin-top: 16px; padding: 6px 14px; border-radius: 99px; background: #fff; color: var(--blau-dunkel); font-weight: 700; }
+
+  /* ---- Karten ---- */
+  .karten { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+  .karte { background: #fff; border: 3px solid var(--linie); border-radius: 18px; padding: 18px; }
+  .karte .gross { font-size: 2.6rem; }
+  .karte h3 { margin: 4px 0 6px; font-size: 1.25rem; }
+  .karte p { margin: 0; }
+  .karte.kurier { border-color: #ff9a3c; }
+  .karte.fohlen { border-color: #3bb273; }
+  .karte.pflege { border-color: #e85d9a; }
+  .tag { display: inline-block; margin-bottom: 6px; padding: 2px 10px; border-radius: 99px; font-size: .85rem; font-weight: 700; color: #fff; }
+  .kurier .tag { background: #ff9a3c; }
+  .fohlen .tag { background: #3bb273; }
+  .pflege .tag { background: #e85d9a; }
+
+  /* ---- Karte von Zug ---- */
+  .karte-zug { background: #fff; border: 3px solid var(--linie); border-radius: 18px; padding: 10px; }
+  .karte-zug svg { width: 100%; height: auto; display: block; }
+  .karte-zug small { display: block; text-align: center; color: #6b7390; padding-top: 4px; }
+
+  /* ---- Tasten ---- */
+  .tasten { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; }
+  .taste-zeile { display: flex; align-items: center; gap: 12px; background: #fff; border: 3px solid var(--linie); border-radius: 14px; padding: 10px 14px; }
+  .taste { display: inline-block; flex: none; white-space: nowrap; min-width: 44px; padding: 6px 10px; text-align: center; font-weight: 800; background: #f1f3f9; border: 2px solid #aab2cc; border-bottom-width: 5px; border-radius: 9px; font-family: ui-monospace, monospace; }
+  .taste-zeile .taste-gruppe { display: flex; gap: 4px; flex-wrap: wrap; }
+
+  /* ---- Ablauf ---- */
+  .ablauf { display: flex; flex-wrap: wrap; gap: 10px; align-items: stretch; }
+  .ablauf-schritt { flex: 1 1 200px; background: #fff; border: 3px solid var(--linie); border-radius: 14px; padding: 12px 14px; position: relative; }
+  .ablauf-schritt b { display: block; font-size: 1.5rem; }
+
+  /* ---- Fortschritt ---- */
+  .fortschritt { position: sticky; top: 0; z-index: 5; background: var(--creme); padding: 10px 0; }
+  .balken { height: 26px; border-radius: 99px; background: #e9e1cd; overflow: hidden; border: 3px solid var(--linie); }
+  .balken-fuellung { height: 100%; width: 0; background: linear-gradient(90deg, #3bb273, #8be28b); transition: width .4s; }
+  .fortschritt-text { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-weight: 700; margin-bottom: 4px; }
+  .fortschritt-text button { font: inherit; font-size: .85rem; font-weight: 400; background: none; border: 0; color: #6b7390; text-decoration: underline; cursor: pointer; }
+
+  /* ---- Etappen ---- */
+  .etappe { margin: 22px 0 0; border-radius: 20px; border: 3px solid var(--farbe); background: #fff; overflow: hidden; }
+  .etappe-kopf { display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: var(--farbe); color: #fff; }
+  .etappe-kopf .gross { font-size: 2.2rem; }
+  .etappe-kopf h3 { margin: 0; font-size: 1.25rem; }
+  .etappe-kopf small { display: block; opacity: .95; }
+  .etappe-liste { list-style: none; margin: 0; padding: 8px 12px 12px; display: grid; gap: 8px; }
+  .schritt { display: flex; gap: 12px; align-items: flex-start; width: 100%; text-align: left; font: inherit; color: inherit; background: #fafafa; border: 2px solid var(--linie); border-radius: 12px; padding: 10px 12px; cursor: pointer; }
+  .schritt:hover { border-color: var(--farbe); }
+  .schritt:focus-visible { outline: 3px solid var(--blau); outline-offset: 2px; }
+  .nummer { flex: none; width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; background: #fff; border: 3px solid var(--farbe); color: var(--farbe); }
+  .schritt.fertig { background: #eaf8ef; border-color: #3bb273; }
+  .schritt.fertig .nummer { background: #3bb273; border-color: #3bb273; color: #fff; }
+  .schritt.fertig .name { text-decoration: line-through; text-decoration-thickness: 2px; }
+  .name { font-weight: 700; display: block; }
+  .pruefung { display: block; font-size: .92rem; color: #55607f; }
+  .meilenstein { margin: 4px 12px 12px; padding: 10px 14px; border-radius: 12px; background: #fff3c4; border: 2px dashed #e0a800; font-weight: 700; }
+  .ideen { display: flex; flex-wrap: wrap; gap: 8px; padding: 12px 16px 16px; }
+  .idee { padding: 6px 12px; border-radius: 99px; background: #fff3c4; border: 2px solid #f0cf55; }
+
+  /* ---- Fragen ---- */
+  .fragen { background: #fff; border: 3px solid var(--linie); border-radius: 18px; padding: 8px 20px 8px 44px; }
+  .fragen li { padding: 6px 0; }
+
+  /* ---- Spielfeld (Platzhalter) ---- */
+  .spielbox { background: #12122a; color: #fff; border-radius: 18px; padding: 16px; text-align: center; }
+  canvas { background: #1d1d45; border-radius: 12px; max-width: 100%; height: auto; outline-offset: 3px; }
+  canvas:focus { outline: 3px solid #ffd54a; }
+  .spielbox p { margin: 10px 0 0; }
+
+  footer { text-align: center; color: #6b7390; padding: 16px; }
 </style>
 </head>
 <body>
-<canvas id="game" width="960" height="540"></canvas>
-<div>Placeholder — arrow keys or WASD to move. The real game goes here.</div>
+
+<header>
+  <div class="hero-emoji">🐴📦🏰</div>
+  <h1>Pferde-Kurier Zug</h1>
+  <p>Reite durch Zug, liefere Pakete aus und fange entlaufene Fohlen ein.</p>
+  <span class="badge">✅ Plan fertig · Spiel kommt gleich</span>
+</header>
+
+<main>
+
+  <!-- ============ Die Idee ============ -->
+  <h2>💡 Die Idee</h2>
+  <p class="lead">Du bist Kurier auf einem Pferd. Zug ist deine Karte, von oben gesehen. Das Pferd braucht Futter und Streicheleinheiten.</p>
+  <div class="karten">
+    <div class="karte kurier">
+      <span class="tag">Modus 1 · kommt zuerst</span>
+      <div class="gross">📦</div>
+      <h3>Pferde-Kurier</h3>
+      <p>Pizza, Post und Pakete ausliefern. Die Uhr läuft. Jede Lieferung gibt Punkte und Zusatzzeit. Nach 10 Lieferungen hast du gewonnen.</p>
+    </div>
+    <div class="karte fohlen">
+      <span class="tag">Modus 2 · danach</span>
+      <div class="gross">🐴</div>
+      <h3>Entlaufene Fohlen</h3>
+      <p>Zehn Fohlen sind aus dem Stall ausgebüxt. Finde sie, reite langsam heran und bring sie heim, bevor die Sonne untergeht.</p>
+    </div>
+    <div class="karte pflege">
+      <span class="tag">Für beide Modi</span>
+      <div class="gross">🥕❤️</div>
+      <h3>Füttern und streicheln</h3>
+      <p>Hungrige Pferde sind langsam, traurige Pferde haben wenig Ausdauer. Füttern und Streicheln hält dein Pferd fit.</p>
+    </div>
+  </div>
+
+  <!-- ============ Karte ============ -->
+  <h2>🗺️ Die Karte von Zug</h2>
+  <p class="lead">So ungefähr sieht die Spielwelt aus. Die echte Karte zeichnen wir in Schritt 2.</p>
+  <div class="karte-zug">
+    <svg viewBox="0 0 640 400" role="img" aria-label="Schematische Karte von Zug mit See, Altstadt, Zytturm, Bahnhof, Zugerberg und Stall">
+      <!-- Wiese -->
+      <rect width="640" height="400" rx="14" fill="#c4eaa9"/>
+      <!-- Zugerberg -->
+      <path d="M390 200 Q470 20 640 30 V200 Z" fill="#7fcf6b"/>
+      <path d="M470 200 Q560 70 640 90 V200 Z" fill="#6cbb59"/>
+      <text x="470" y="115" font-size="26">🌲</text><text x="520" y="90" font-size="26">🌲</text><text x="560" y="140" font-size="26">🌲</text><text x="500" y="165" font-size="22">🍎</text>
+      <!-- Zugersee -->
+      <path d="M0 0 H205 C235 70 185 130 215 195 C245 265 195 335 230 400 H0 Z" fill="#5ab4f0"/>
+      <path d="M30 60 q15 -10 30 0 t30 0 M60 140 q15 -10 30 0 t30 0 M20 230 q15 -10 30 0 t30 0 M70 320 q15 -10 30 0 t30 0" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <text x="95" y="190" font-size="30">🚢</text>
+      <text x="150" y="110" font-size="20">🐦</text>
+      <!-- Wege -->
+      <g stroke="#ecdcb0" stroke-width="12" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M240 30 C262 100 224 190 252 260 C268 310 246 360 256 390"/>
+        <path d="M345 330 L310 240"/>
+        <path d="M340 215 L450 262"/>
+        <path d="M480 245 L505 170"/>
+        <path d="M252 260 L345 330"/>
+      </g>
+      <path d="M240 30 C262 100 224 190 252 260 C268 310 246 360 256 390" stroke="#fff" stroke-width="2" stroke-dasharray="6 8" fill="none"/>
+      <!-- Altstadt -->
+      <g stroke="#7a5a3a" stroke-width="2">
+        <rect x="262" y="185" width="40" height="38" fill="#f5c27a"/><polygon points="258,185 282,165 306,185" fill="#d9674b"/>
+        <rect x="312" y="195" width="38" height="36" fill="#f7e1a0"/><polygon points="308,195 331,176 354,195" fill="#c9503a"/>
+        <rect x="268" y="232" width="36" height="34" fill="#e8a187"/><polygon points="264,232 286,214 308,232" fill="#b94a35"/>
+        <rect x="316" y="240" width="40" height="32" fill="#f5c27a"/><polygon points="312,240 336,222 360,240" fill="#d9674b"/>
+      </g>
+      <!-- Zytturm -->
+      <g stroke="#25304a" stroke-width="2">
+        <rect x="282" y="108" width="28" height="64" fill="#fff"/>
+        <polygon points="278,108 296,66 314,108" fill="#1b6ec2"/>
+        <circle cx="296" cy="130" r="9" fill="#fff"/>
+      </g>
+      <path d="M296 130 v-6 M296 130 h5" stroke="#25304a" stroke-width="2" fill="none"/>
+      <!-- Bahnhof -->
+      <g stroke="#25304a" stroke-width="2">
+        <rect x="430" y="262" width="110" height="38" fill="#cfd5e4"/>
+        <rect x="440" y="272" width="20" height="14" fill="#8fc9f2"/><rect x="470" y="272" width="20" height="14" fill="#8fc9f2"/><rect x="500" y="272" width="20" height="14" fill="#8fc9f2"/>
+      </g>
+      <g stroke="#55607f" stroke-width="3"><path d="M390 320 H640 M390 334 H640"/></g>
+      <text x="560" y="332" font-size="28">🚆</text>
+      <!-- Stall -->
+      <g stroke="#25304a" stroke-width="2">
+        <rect x="318" y="332" width="64" height="46" fill="#e8d0a0"/>
+        <polygon points="312,332 350,304 388,332" fill="#1b6ec2"/>
+        <rect x="341" y="352" width="18" height="26" fill="#8a5a30"/>
+      </g>
+      <path d="M350 304 V282" stroke="#25304a" stroke-width="2"/><rect x="350" y="282" width="22" height="14" fill="#fff" stroke="#1b6ec2" stroke-width="3"/>
+      <text x="396" y="368" font-size="26">🐴</text>
+      <!-- Beispiel-Lieferung -->
+      <path d="M470 252 C420 215 360 200 322 145" stroke="#ff7a00" stroke-width="4" stroke-dasharray="3 9" stroke-linecap="round" fill="none"/>
+      <text x="395" y="196" font-size="28">📦</text>
+      <!-- Namen -->
+      <g font-size="14" font-weight="700" fill="#25304a" text-anchor="middle">
+        <g><rect x="120" y="14" width="96" height="24" rx="12" fill="#fff"/><text x="168" y="31">Zugersee</text></g>
+        <g><rect x="192" y="352" width="116" height="24" rx="12" fill="#fff"/><text x="250" y="369">Seepromenade</text></g>
+        <g><rect x="250" y="276" width="76" height="24" rx="12" fill="#fff"/><text x="288" y="293">Altstadt</text></g>
+        <g><rect x="252" y="46" width="70" height="24" rx="12" fill="#fff"/><text x="287" y="63">Zytturm</text></g>
+        <g><rect x="458" y="304" width="76" height="22" rx="11" fill="#fff"/><text x="496" y="320">Bahnhof</text></g>
+        <g><rect x="500" y="40" width="108" height="24" rx="12" fill="#fff"/><text x="554" y="57">Zugerberg</text></g>
+        <g><rect x="326" y="378" width="48" height="20" rx="10" fill="#fff"/><text x="350" y="393">Stall</text></g>
+      </g>
+    </svg>
+    <small>Nicht massstabsgetreu. Die orange Linie zeigt eine Lieferung vom Bahnhof zum Zytturm.</small>
+  </div>
+
+  <!-- ============ Steuerung ============ -->
+  <h2>⌨️ Steuerung</h2>
+  <p class="lead">Nur Tastatur.</p>
+  <div class="tasten">
+    <div class="taste-zeile"><span class="taste-gruppe"><span class="taste">W</span><span class="taste">A</span><span class="taste">S</span><span class="taste">D</span></span><span>oder Pfeile: Reiten</span></div>
+    <div class="taste-zeile"><span class="taste">Leertaste</span><span>Galopp</span></div>
+    <div class="taste-zeile"><span class="taste">E</span><span>Paket nehmen oder abgeben, Fohlen fangen</span></div>
+    <div class="taste-zeile"><span class="taste">F</span><span>Pferd füttern 🥕</span></div>
+    <div class="taste-zeile"><span class="taste">G</span><span>Pferd streicheln ❤️</span></div>
+    <div class="taste-zeile"><span class="taste">Enter</span><span>Starten</span><span class="taste">R</span><span>Neustart</span></div>
+  </div>
+
+  <!-- ============ Ablauf ============ -->
+  <h2>🔁 So arbeiten wir</h2>
+  <p class="lead">Immer nur eine Änderung auf einmal. Dann sehen wir genau, was sie bewirkt.</p>
+  <div class="ablauf">
+    <div class="ablauf-schritt"><b>1️⃣ 💭</b>Ihr sucht euch <strong>eine</strong> Änderung aus.</div>
+    <div class="ablauf-schritt"><b>2️⃣ 🤖</b>Claude baut sie. Das dauert ein bis drei Minuten.</div>
+    <div class="ablauf-schritt"><b>3️⃣ 🎮</b>Seite neu laden und spielen.</div>
+    <div class="ablauf-schritt"><b>4️⃣ 👍👎</b>Behalten oder »mach das rückgängig«.</div>
+  </div>
+
+  <!-- ============ Projektplan ============ -->
+  <h2>🚩 Der Projektplan</h2>
+  <p class="lead">18 Schritte in 5 Etappen. Tippt auf einen Schritt, wenn er fertig ist. Dann wird er grün.</p>
+
+  <div class="fortschritt">
+    <div class="fortschritt-text">
+      <span id="fortschritt-text">0 von 18 Schritten</span>
+      <button id="zuruecksetzen" type="button">alles zurücksetzen</button>
+    </div>
+    <div class="balken" role="progressbar" aria-valuemin="0" aria-valuemax="18" aria-valuenow="0" id="balken">
+      <div class="balken-fuellung" id="balken-fuellung"></div>
+    </div>
+  </div>
+
+  <div id="plan"></div>
+
+  <!-- ============ Fragen ============ -->
+  <h2>❓ Das müsst ihr noch entscheiden</h2>
+  <ol class="fragen">
+    <li>Wie heisst das Spiel?</li>
+    <li>Wie heisst das Pferd, und welche Farbe hat es?</li>
+    <li>Welche weiteren Orte in Zug gehören unbedingt auf die Karte?</li>
+    <li>Welche Pakete soll der Kurier ausliefern?</li>
+    <li>Allein spielen oder zu zweit?</li>
+  </ol>
+
+  <!-- ============ Platzhalter-Spiel ============ -->
+  <h2>🎮 Hier entsteht das Spiel</h2>
+  <p class="lead">Bis das Pferd kommt, läuft hier ein Platzhalter. Klick aufs Spielfeld, dann Pfeiltasten oder WASD.</p>
+  <div class="spielbox">
+    <canvas id="game" width="960" height="540" tabindex="0" aria-label="Spielfeld"></canvas>
+    <p>Platzhalter · Klick aufs Feld, dann Pfeiltasten oder WASD</p>
+  </div>
+
+</main>
+
+<footer>Gebaut von Kindern und Claude · Zug, Schweiz</footer>
+
 <script>
 // ===== SETTINGS: change these numbers and reload! =====
 const SETTINGS = {
@@ -23,11 +272,160 @@ const SETTINGS = {
 };
 // ======================================================
 
+// ---------- Projektplan: Etappen und Schritte ----------
+// Jede Etappe hat eine Farbe, ein Emoji und eine Liste von Schritten [Nummer, Name, "Fertig, wenn..."].
+const ETAPPEN = [
+  { emoji: '🗺️', titel: 'Etappe A: Welt und Pferd', farbe: '#1b6ec2', hinweis: 'Claude baut die Schritte 1 bis 3 in einem Rutsch.',
+    schritte: [
+      [1, 'Startbildschirm auf Deutsch', 'Titel erscheint, Enter startet, R startet neu.'],
+      [2, 'Karte von Zug zeichnen', 'See, Altstadt, Bahnhof, Zugerberg und Stall sind zu sehen. Die Kamera folgt dem Pferd.'],
+      [3, 'Pferd reiten', 'Das Pferd reitet in alle Richtungen und bleibt vor dem See und vor Häusern stehen. Die Leertaste macht es schneller.'],
+    ] },
+  { emoji: '📦', titel: 'Etappe B: Modus Pferde-Kurier', farbe: '#ff8c1a', hinweis: 'Danach ist das Spiel zum ersten Mal spielbar.',
+    schritte: [
+      [4, 'Aufträge und Pfeil', 'Ein Auftrag erscheint, der Pfeil zeigt zum Ziel. E nimmt das Paket und gibt es ab.'],
+      [5, 'Uhr und Punkte', 'Oben stehen Zeit und Punkte. Lieferungen geben Punkte und Zusatzzeit.'],
+      [6, 'Sieg und Verlieren', 'Nach 10 Lieferungen kommt »Geschafft!«. Läuft die Uhr ab, kommt »Zeit um!«.'],
+      [7, 'Hindernisse', 'Enten, Pfützen und Marktstände stehen im Weg.'],
+      [8, 'Übersichtskarte', 'Unten rechts zeigt die Karte Pferd und Ziel.'],
+    ],
+    meilenstein: '🏁 Erste spielbare Version!' },
+  { emoji: '🥕', titel: 'Etappe C: Pferd füttern und streicheln', farbe: '#e0457f', hinweis: 'Das Pferd bekommt Hunger und Laune.',
+    schritte: [
+      [9, 'Hunger und Futter', 'Der Hunger-Balken sinkt. F füttert. Bei leerem Balken geht kein Galopp.'],
+      [10, 'Laune und Streicheln', 'Der Laune-Balken sinkt bei Zusammenstössen. G streichelt, Herzchen steigen auf.'],
+    ] },
+  { emoji: '✨', titel: 'Etappe D: Es fühlt sich gut an', farbe: '#8a5bd6', hinweis: 'Geräusche und Effekte machen aus dem Spiel ein richtiges Spiel.',
+    schritte: [
+      [11, 'Geräusche', 'Hufe, Wiehern, Kauen, Abgeben, Zeit wird knapp.'],
+      [12, 'Staub und Konfetti', 'Staubwolke beim Galopp, Konfetti bei der Lieferung.'],
+      [13, 'Highscore speichern', 'Die beste Punktzahl bleibt nach dem Neuladen erhalten.'],
+    ] },
+  { emoji: '🐴', titel: 'Etappe E: Modus Entlaufene Fohlen', farbe: '#2f9e63', hinweis: 'Der zweite Modus nutzt dieselbe Karte.',
+    schritte: [
+      [14, 'Modus-Auswahl', 'Auf dem Startbildschirm wählt 1 oder 2 den Modus.'],
+      [15, 'Fohlen verstecken', '10 Fohlen stehen an festen Orten in Zug. Der Zähler zeigt Fohlen: 3/10.'],
+      [16, 'Einfangen und Heimbringen', 'Langsam heranreiten und E fängt ein Fohlen. Es folgt dir zum Stall.'],
+      [17, 'Wegrennen und Beruhigen', 'Im Galopp rennen Fohlen weg. Karotte und Streicheln beruhigen sie.'],
+      [18, 'Sonnenuntergang', 'Der Himmel wird dunkler. Ist die Sonne weg, kommt »Zu spät!«. Alle Fohlen im Stall geben »Geschafft!«.'],
+    ],
+    meilenstein: '🏆 Beide Modi fertig!' },
+];
+const SPAETER = [
+  '🐙 Seemonster im Zugersee', '🕵️ Wer hat die Kirschtorte gestohlen?', '🧽 Pferd striegeln',
+  '🏇 Rennen auf den Zugerberg', '👫 Zweiter Spieler', '🔑 Geheimer Cheat-Code', '🖼️ Eigenes Bild als Figur',
+];
+const GESAMT_SCHRITTE = ETAPPEN.reduce((summe, e) => summe + e.schritte.length, 0);
+const SPEICHER_NAME = 'pferde-kurier-fertige-schritte';
+
+// ---------- Fertige Schritte merken (nur in diesem Browser) ----------
+function ladeFertige() {
+  try { return new Set(JSON.parse(localStorage.getItem(SPEICHER_NAME) || '[]')); }
+  catch (e) { return new Set(); }
+}
+function speichereFertige(fertige) {
+  try { localStorage.setItem(SPEICHER_NAME, JSON.stringify([...fertige])); }
+  catch (e) { /* kein Speicher: macht nichts, der Plan geht trotzdem */ }
+}
+const fertige = ladeFertige();
+
+// ---------- Plan zeichnen ----------
+const planBox = document.getElementById('plan');
+
+function baueSchritt(nummer, name, pruefung) {
+  const knopf = document.createElement('button');
+  knopf.type = 'button';
+  knopf.className = 'schritt';
+  knopf.dataset.nummer = nummer;
+  knopf.innerHTML = '<span class="nummer"></span><span><span class="name"></span><span class="pruefung"></span></span>';
+  knopf.querySelector('.nummer').textContent = nummer;
+  knopf.querySelector('.name').textContent = name;
+  knopf.querySelector('.pruefung').textContent = 'Fertig, wenn: ' + pruefung;
+  knopf.addEventListener('click', () => schrittUmschalten(nummer));
+  return knopf;
+}
+
+function baueEtappe(etappe) {
+  const box = document.createElement('section');
+  box.className = 'etappe';
+  box.style.setProperty('--farbe', etappe.farbe);
+  box.innerHTML = '<div class="etappe-kopf"><span class="gross"></span><div><h3></h3><small></small></div></div><ul class="etappe-liste"></ul>';
+  box.querySelector('.gross').textContent = etappe.emoji;
+  box.querySelector('h3').textContent = etappe.titel;
+  box.querySelector('small').textContent = etappe.hinweis;
+  const liste = box.querySelector('.etappe-liste');
+  for (const [nummer, name, pruefung] of etappe.schritte) {
+    const eintrag = document.createElement('li');
+    eintrag.appendChild(baueSchritt(nummer, name, pruefung));
+    liste.appendChild(eintrag);
+  }
+  if (etappe.meilenstein) {
+    const fahne = document.createElement('div');
+    fahne.className = 'meilenstein';
+    fahne.textContent = etappe.meilenstein;
+    box.appendChild(fahne);
+  }
+  return box;
+}
+
+function baueSpaeter() {
+  const box = document.createElement('section');
+  box.className = 'etappe';
+  box.style.setProperty('--farbe', '#e0a800');
+  box.innerHTML = '<div class="etappe-kopf"><span class="gross">💡</span><div><h3>Etappe F: Eure Ideen</h3><small>Reihenfolge frei. Sucht euch aus, was euch gefällt.</small></div></div><div class="ideen"></div>';
+  const ideen = box.querySelector('.ideen');
+  for (const text of SPAETER) {
+    const chip = document.createElement('span');
+    chip.className = 'idee';
+    chip.textContent = text;
+    ideen.appendChild(chip);
+  }
+  return box;
+}
+
+// ---------- Fortschritt anzeigen ----------
+function zeigeFortschritt() {
+  for (const knopf of planBox.querySelectorAll('.schritt')) {
+    const istFertig = fertige.has(Number(knopf.dataset.nummer));
+    knopf.classList.toggle('fertig', istFertig);
+    knopf.setAttribute('aria-pressed', istFertig);
+  }
+  const anzahl = fertige.size;
+  document.getElementById('fortschritt-text').textContent =
+    anzahl === GESAMT_SCHRITTE ? '🎉 Alle ' + GESAMT_SCHRITTE + ' Schritte geschafft!' : anzahl + ' von ' + GESAMT_SCHRITTE + ' Schritten';
+  document.getElementById('balken-fuellung').style.width = (anzahl / GESAMT_SCHRITTE * 100) + '%';
+  document.getElementById('balken').setAttribute('aria-valuenow', anzahl);
+}
+
+function schrittUmschalten(nummer) {
+  if (fertige.has(nummer)) fertige.delete(nummer); else fertige.add(nummer);
+  speichereFertige(fertige);
+  zeigeFortschritt();
+}
+
+document.getElementById('zuruecksetzen').addEventListener('click', () => {
+  fertige.clear();
+  speichereFertige(fertige);
+  zeigeFortschritt();
+});
+
+for (const etappe of ETAPPEN) planBox.appendChild(baueEtappe(etappe));
+planBox.appendChild(baueSpaeter());
+zeigeFortschritt();
+
+// ---------- Platzhalter-Spiel ----------
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
 const keys = new Set();
-addEventListener('keydown', e => { keys.add(e.key.toLowerCase()); if (e.key.startsWith('Arrow')) e.preventDefault(); });
+const gameHasFocus = () => document.activeElement === canvas; // Tasten zählen nur nach einem Klick aufs Feld
+addEventListener('keydown', e => {
+  if (!gameHasFocus()) return;
+  keys.add(e.key.toLowerCase());
+  if (e.key.startsWith('Arrow') || e.key === ' ') e.preventDefault();
+});
 addEventListener('keyup', e => keys.delete(e.key.toLowerCase()));
+canvas.addEventListener('blur', () => keys.clear());
+canvas.addEventListener('click', () => canvas.focus());
 
 const hero = { x: canvas.width / 2, y: canvas.height / 2 };
 let last = performance.now();

@@ -77,13 +77,84 @@ Die Liste ist ein Startvorschlag. Ihr denkt euch weitere Aufträge aus.
 
 Auf dem Startbildschirm wählst du den Modus mit `1` (Kurier) oder `2` (Fohlen).
 
+## Der Reitstall
+
+Der Reitstall ist ein Ort in der Welt, gleich neben deinem Zuhause. Du reitest hinein wie in jeden anderen Ort. Dort stehen deine Pferde, und du suchst aus, mit welchem Pferd du losreitest.
+
+### Was zum Reitstall gehört
+
+| Teil | Was dort ist |
+|---|---|
+| 🏠 **Zuhause** | Dein Haus. Hier startet das Spiel. |
+| 🐴 **Stallgasse mit 6 Boxen** | In jeder Box steht ein Pferd. |
+| 🏛️ **Reithalle** | Halle mit Dach für Dressur. |
+| 🚧 **Reitplatz** | Platz draussen mit einem Springparcours. |
+
+### Die Box
+
+Jede Box hat:
+
+- ein **Namensschild** mit dem Namen des Pferdes
+- **Heu**
+- einen **Wassereimer**
+- **Einstreu** zum Hinlegen
+
+### Die Pferde
+
+Am Anfang stehen 6 Pferde im Stall. Name, Rasse und Fellfarbe werden zufällig ausgewählt. Jedes Spiel hat also andere Pferde.
+
+| Eigenschaft | Auswahl |
+|---|---|
+| **Rasse** | KWPN, Englisches Vollblut, Friese, Haflinger, Hannoveraner |
+| **Fellfarbe** | Apfelschimmel, Brauner, Schecke, Fuchs |
+| **Name** | Zufällig aus einer Namensliste in `SETTINGS` |
+
+**Offen:** Darf jede Rasse jede Farbe haben? Echte Friesen sind immer schwarz, und Haflinger sind immer Füchse mit heller Mähne. Vorschlag: Friese bekommt Rappe als fünfte Farbe, Haflinger ist immer Fuchs, die anderen Rassen werden zufällig.
+
+### Ausrüstung
+
+Jedes Pferd kann so ausgerüstet werden:
+
+| Teil | Auswahl |
+|---|---|
+| **Sattel** | Springsattel, Dressursattel, Westernsattel, Vielseitigkeitssattel |
+| **Schabracke** | Passt unter jeden Sattel. Farbe wählbar. |
+| **Zaum** | Mexikanischer Zaum, Englischer Zaum |
+| **Gamaschen** | Hartschalengamaschen, vorne und hinten, mit oder ohne Fell |
+
+**Offen:** Macht die Ausrüstung im Spiel einen Unterschied? Vorschlag: Der Springsattel gibt auf dem Reitplatz einen kleinen Bonus, der Dressursattel in der Reithalle. Sonst ist alles nur Aussehen.
+
+### Reithalle: Dressur
+
+**Offen, Vorschlag:** Auf dem Boden der Halle leuchtet eine Figur auf (Kreis, Schlangenlinie, Diagonale). Du reitest sie nach. Je genauer du auf der Linie bleibst, desto mehr Punkte. Am Ende gibt es eine Note und eine Schleife 🎀.
+
+### Reitplatz: Springen
+
+**Offen, Vorschlag:** Ein Parcours mit nummerierten Hindernissen. Du reitest sie der Reihe nach und springst mit der `Leertaste`. Die Zeit läuft. Eine umgeworfene Stange gibt 4 Fehlerpunkte. Die Bestzeit ohne Fehler wird gespeichert.
+
+### Fragen an euch
+
+1. Wie bedient man den Stall? Vorschlag: Vor eine Box reiten, `E` drücken. Dann wählst du mit den Pfeilen Sattel, Schabracke, Zaum und Gamaschen aus. `Enter` heisst »mit diesem Pferd reiten«.
+2. Wie viele Hindernisse hat der Parcours, und wie heissen sie (Steilsprung, Oxer, Wassergraben)?
+3. Bleiben deine Pferde und ihre Ausrüstung nach dem Neuladen erhalten? Vorschlag: ja.
+4. Welche Farben gibt es für die Schabracke?
+
+### Abstimmung mit der 3D-Welt
+
+Eine zweite Session baut gerade die 3D-Welt. Damit beide dasselbe Pferd zeigen:
+
+- Rassen, Fellfarben, Sättel, Zäume und Gamaschen stehen **einmal** in `SETTINGS`, mit festen Namen und Farbcodes. Beide Teile lesen dieselbe Liste.
+- **Zu klären:** `CLAUDE.md` erlaubt keine Fremdbibliotheken, also kein three.js. Entweder bekommt die 3D-Welt dafür eine Ausnahme, oder sie wird mit reinem Canvas gebaut.
+- **Zu klären:** Beide Sessions ändern `index.html`. Teil G wird erst gebaut, wenn die 3D-Welt gemergt ist, damit es keine Konflikte gibt.
+
 ## Die Karte von Zug
 
 Eine Karte, die in beiden Modi gebraucht wird:
 
 | Ort | Aussehen auf der Karte |
 |---|---|
-| **Stall** | Start und Ziel, mit Futtertrog. Blaues Dach mit weisser Fahne (die Zuger Farben). |
+| **Zuhause** | Dein Haus, gleich neben dem Reitstall. Hier startest du. |
+| **Stall** | Reitstall mit 6 Boxen, Reithalle und Reitplatz. Ziel für Fohlen, mit Futtertrog. Blaues Dach mit weisser Fahne (die Zuger Farben). |
 | **Altstadt** | Gassen zwischen Häusern, Marktstände. |
 | **Zytturm** | Turm am Rand der Altstadt, immer gut zu sehen. |
 | **Seepromenade** | Weg am Wasser, Bänke, Möwen 🐦. |
@@ -157,6 +228,19 @@ Jeder Schritt ist **eine Änderung und ein Commit**. Nach jedem Schritt laden wi
 | 16 | **Einfangen und Heimbringen** | Langsam heranreiten und `E` fängt ein Fohlen. Es folgt dir zum Stall. |
 | 17 | **Wegrennen und Beruhigen** | Im Galopp rennen Fohlen weg. Karotte und Streicheln beruhigen sie. |
 | 18 | **Sonnenuntergang** | Der Himmel wird dunkler. Ist die Sonne weg, erscheint »Zu spät!«. Alle Fohlen im Stall geben »Geschafft!«. |
+
+### Teil G: Reitstall
+
+| # | Schritt | Fertig, wenn... |
+|---|---|---|
+| 19 | **Zuhause und Reitstall auf der Karte** | Haus und Reitstall stehen nebeneinander. Das Spiel startet vor dem Haus. |
+| 20 | **Stallgasse mit 6 Boxen** | Jede Box hat Namensschild, Heu, Wassereimer und Einstreu. In jeder steht ein Pferd. |
+| 21 | **Zufällige Pferde** | Jedes Pferd hat Name, Rasse und Fellfarbe. Nach einem Neustart sind es andere. |
+| 22 | **Pferd auswählen** | Vor einer Box `E` drücken zeigt das Pferd. `Enter` wählt es, und du reitest mit ihm weiter. |
+| 23 | **Ausrüstung** | Sattel, Schabracke, Zaum und Gamaschen lassen sich wählen und sind am Pferd zu sehen. |
+| 24 | **Pferde speichern** | Pferde und Ausrüstung sind nach dem Neuladen noch da. |
+| 25 | **Reitplatz mit Parcours** | Hindernisse in der richtigen Reihenfolge springen, Zeit und Fehlerpunkte zählen, Bestzeit bleibt gespeichert. |
+| 26 | **Reithalle mit Dressur** | Eine Figur leuchtet auf, du reitest sie nach und bekommst eine Note und eine Schleife. |
 
 ### Teil F: Eure Ideen (Reihenfolge frei)
 

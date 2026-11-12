@@ -87,11 +87,25 @@
   .fragen { background: #fff; border: 3px solid var(--linie); border-radius: 18px; padding: 8px 20px 8px 44px; }
   .fragen li { padding: 6px 0; }
 
-  /* ---- Spielfeld (Platzhalter) ---- */
+  /* ---- Spielfeld ---- */
   .spielbox { background: #12122a; color: #fff; border-radius: 18px; padding: 16px; text-align: center; }
   canvas { background: #1d1d45; border-radius: 12px; max-width: 100%; height: auto; outline-offset: 3px; }
   canvas:focus { outline: 3px solid #ffd54a; }
   .spielbox p { margin: 10px 0 0; }
+  .spielfeld { position: relative; max-width: 960px; margin: 0 auto; }
+  .spielfeld canvas#game { display: block; width: 100%; }
+  .hud-leiste { position: absolute; top: 10px; left: 10px; padding: 6px 14px; border-radius: 12px; background: rgba(18,30,60,.75); font-weight: 700; font-size: 1.1rem; white-space: pre; pointer-events: none; }
+  .hud-leiste.knapp { background: rgba(200,40,40,.85); }
+  .hud-ziel { position: absolute; top: 10px; right: 10px; display: flex; align-items: center; gap: 8px; padding: 6px 14px; border-radius: 12px; background: rgba(18,30,60,.75); font-weight: 700; pointer-events: none; }
+  .hud-pfeil { display: inline-block; font-size: 1.5rem; }
+  .hud-karte { position: absolute; right: 10px; bottom: 10px; width: 25%; max-width: 180px; height: auto; border: 3px solid #fff; border-radius: 10px; background: #86c95d; pointer-events: none; }
+  .hud-schirm { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 16px; border-radius: 12px; background: rgba(18,40,90,.72); pointer-events: none; }
+  .hud-schirm[hidden] { display: none; }
+  .hud-schirm h3 { margin: 0; font-size: clamp(1.6rem, 5vw, 3.2rem); }
+  .hud-schirm small { font-size: .5em; }
+  .hud-schirm p { font-size: 1.15rem; max-width: 640px; }
+  .hud-schirm .klein { font-size: .95rem; color: #dfe9ff; }
+  .hud-schirm .start-hinweis, .hud-schirm .hinweis-fest { font-size: 1.4rem; font-weight: 700; color: #ffd54a; }
 
   /* ---- Navigation ---- */
   .nav { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; padding: 14px 16px 0; max-width: 1000px; margin: 0 auto; }
@@ -557,36 +571,75 @@
   <h2 id="spiel">🎮 Das Spiel</h2>
   <p class="lead">Schritte 1 bis 3: Startbildschirm, Karte von Zug, Pferd reiten. Klick aufs Spielfeld und drück Enter.</p>
   <div class="spielbox">
-    <canvas id="game" width="960" height="540" tabindex="0" aria-label="Spielfeld"></canvas>
-    <p>Klick aufs Feld · Enter = Start · WASD oder Pfeile = reiten · Leertaste = Galopp · R = Neustart</p>
+    <div class="spielfeld">
+      <canvas id="game" width="960" height="540" tabindex="0" aria-label="Spielfeld"></canvas>
+      <div id="hud-leiste" class="hud-leiste"></div>
+      <div class="hud-ziel"><span id="hud-pfeil" class="hud-pfeil">⬆️</span><span id="hud-ziel"></span></div>
+      <canvas id="hud-karte" class="hud-karte" width="180" height="180"></canvas>
+      <div id="hud-start" class="hud-schirm">
+        <h3>🐎 Horse World <small>(Switzerland)</small></h3>
+        <p>Reite von Zuhause zur OYM-Halle! Sammle unterwegs Karotten 🥕.</p>
+        <p class="klein">W / ⬆️ = vorwärts · A D / ⬅️ ➡️ = lenken · S / ⬇️ = rückwärts · Leertaste = Galopp · R = Neustart</p>
+        <p class="start-hinweis"></p>
+      </div>
+      <div id="hud-ende" class="hud-schirm" hidden>
+        <h3 id="hud-ende-titel"></h3>
+        <p id="hud-ende-text"></p>
+        <p class="hinweis-fest">Drücke R für eine neue Runde</p>
+      </div>
+    </div>
+    <p>Klick aufs Feld · Enter = Start · W A S D oder Pfeile = reiten · Leertaste = Galopp · R = Neustart</p>
   </div>
 
 </main>
 
 <footer>Gebaut von Kindern und Claude · Zug, Schweiz</footer>
 
+<script src="assets/three.min.js"></script>
+<script src="assets/karte.js"></script>
 <script>
 // ===== SETTINGS: Zahlen ändern, speichern, Seite neu laden! =====
 const SETTINGS = {
-  horse: '🐎',           // Emoji für dein Pferd
-  horseName: 'Blitz',    // Wie heisst dein Pferd?
-  horseSize: 44,         // Grösse des Pferdes in Pixeln
-  horseLooksLeft: true,  // Reitet das Pferd rückwärts? Dann auf false stellen (jeder Computer malt Emoji anders)
-  walkSpeed: 200,        // Reittempo (Pixel pro Sekunde)
-  gallopSpeed: 380,      // Tempo im Galopp (Leertaste)
-  tileSize: 48,          // Grösse eines Kartenfelds in Pixeln
-  showPlaceNames: true,  // Ortsnamen auf der Karte zeigen (true oder false)
-  trainSpeed: 160,       // Wie schnell der Zug 🚆 fährt
-  boatSpeed: 40,         // Wie schnell das Schiff 🚢 fährt
+  walkSpeed: 5,            // Reittempo in Metern pro Sekunde
+  gallopSpeed: 16,         // Tempo im Galopp (Leertaste gedrückt halten)
+  backSpeed: 2,            // Tempo beim Rückwärtsgehen
+  turnSpeed: 2.2,          // Wie schnell das Pferd sich dreht
+  acceleration: 3,         // Wie schnell das Pferd Tempo aufnimmt
+  horseRadius: 1.2,        // Wie breit das Pferd beim Anstossen an Häuser ist
+  timeLimitSeconds: 300,   // Zeit bis »Zeit um!« (300 = 5 Minuten)
+  pointsPerCarrot: 10,     // Punkte pro Karotte 🥕
+  pointsPerSecondLeft: 2,  // Punkte pro übrige Sekunde im Ziel
+  pickupDistance: 2.5,     // So nah musst du an eine Karotte heran
+  cameraDistance: 11,      // Abstand der Kamera hinter dem Pferd
+  cameraHeight: 6,         // Höhe der Kamera
+  viewDistance: 450,       // Wie weit man sieht (kleiner = schneller auf alten Laptops)
   colors: {
-    grass: '#8fd16a',     // Wiese
-    hill: '#6fb550',      // Zugerberg
-    lake: '#3d8fd6',      // Zugersee
-    street: '#d9c7a3',    // Strassen und Gassen
-    promenade: '#efe2c0', // Seepromenade
-    house: '#f4e9d8',     // Hauswände
-    roof: '#c8553d',      // Dächer
-    zugBlue: '#1b6ec2',   // Zuger Blau (Stall-Dach, Zytturm)
+    horse: '#8a5a33',      // Fell
+    mane: '#2e1d12',       // Mähne und Schweif
+    horseNose: '#d8b48c',  // Nase
+    hoof: '#222222',       // Hufe
+    saddle: '#1b6ec2',     // Sattel (Zuger Blau)
+    riderShirt: '#e0457f', // T-Shirt
+    riderSkin: '#f1c6a0',  // Haut
+    riderHelmet: '#222b45',// Reithelm
+    sky: '#9fd4ff',        // Himmel
+    grass: '#86c95d',      // Boden
+    meadow: '#9bd66a',     // Wiese
+    field: '#c9d77a',      // Acker
+    garden: '#93cf68',     // Gärten im Quartier
+    forestFloor: '#4f8f3a',// Waldboden
+    square: '#cfc6b6',     // Plätze und Parkplätze
+    water: '#3d8fd6',      // See und Bäche
+    bigRoad: '#5d6168',    // Hauptstrassen
+    road: '#7a7e86',       // Quartierstrassen
+    path: '#d9c7a3',       // Fuss- und Velowege
+    track: '#b89b6a',      // Feldwege
+    railBed: '#8f8577',    // Schotter der Bahn
+    rail: '#4a4a52',       // Schienen
+    leaves: ['#3f9a3a', '#2f7f35', '#58b048'], // Baumkronen
+    goalHall: '#f5f5f5',   // Wände der OYM-Halle
+    goalRoof: '#ff3d7f',   // Dach der OYM-Halle
+    goalBeam: '#ff7fb0',   // Lichtsäule über dem Ziel
   },
 };
 // =================================================================
@@ -733,77 +786,23 @@ planBox.appendChild(baueSpaeter());
 zeigeFortschritt();
 
 // =================================================================
-// ===== DAS SPIEL: Horse World (Switzerland) =====
+// ===== DAS SPIEL: Horse World (Switzerland), in 3D =====
 // =================================================================
+// Die Karte (Strassen, Häuser, Wald) steht in assets/karte.js und kommt aus OpenStreetMap.
+// Eine Einheit in der 3D-Welt ist ein Meter.
 
-// ---------- Die Karte von Zug ----------
-// Jedes Zeichen ist ein Feld. Ihr dürft die Karte ändern, aber jede Zeile muss gleich lang bleiben!
-//   .  Wiese        ^  Zugerberg    ~  Zugersee     -  Seepromenade
-//   ,  Strasse      =  Gleise       T  Baum         #  Haus
-//   B  Bahnhof      S  Stall        Z  Zytturm
-const MAP = [
-    '~~~~~~~~~~~~................................................',
-    '~~~~~~~~~~~~~...............................................',
-    '~~~~~~~~~~~~~...............................................',
-    '~~~~~~~~~~~~~~..............................................',
-    '~~~~~~~~~~~~~~==============================================',
-    '~~~~~~~~~~~~~~==============================================',
-    '~~~~~~~~~~~~~~..............................................',
-    '~~~~~~~~~~~~~~..............BBBBBBBB........................',
-    '~~~~~~~~~~~~~~--............BBBBBBBB........................',
-    '~~~~~~~~~~~~~--...,,,,,,,,,,,,,,,,,,,,,,,,,,,...............',
-    '~~~~~~~~~~~~--....###.###......,,.....###.###^^^^^^^^^^^^^^^',
-    '~~~~~~~~~~~~--....###.###......,,.....###.###^^^^T^^T^T^TT^^',
-    '~~~~~~~~~~~--..................,,............^T^^^^^^T^^^T^^',
-    '~~~~~~~~~~--......###.###......,,....T###.###^^^^^^TT^^^^^^^',
-    '~~~~~~~~~~--......###.###......,,.....###.###^^^^^^^^^^T^^^^',
-    '~~~~~~~~~~--..............T....,,............^T^^^^^^^^^^^^^',
-    '~~~~~~~~~~--...................,,............^T^^^^^^^T^^TT^',
-    '~~~~~~~~~~--...T...............,,............^T^^^T^^^^^^^^^',
-    '~~~~~~~~~~--..................SSSS...........^^^^^^^^^T^^^^^',
-    '~~~~~~~~~~~--.................SSSS...........^^^^T^^^^^^T^TT',
-    '~~~~~~~~~~~--.................SSSS...........^^^^TT^T^T^^^^^',
-    '~~~~~~~~~~~~--...............................^^T^^^^TT^^^^T^',
-    '~~~~~~~~~~~~~--,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,',
-    '~~~~~~~~~~~~~--.,,,,,,,,,,,,,................^^^^T^^^^^^^^^^',
-    '~~~~~~~~~~~~~~--,###,###,###,ZZ..............^^^^^^^^^^^^TT^',
-    '~~~~~~~~~~~~~~--,###,###,###,ZZ..............^^^^^^^^^^^^^^^',
-    '~~~~~~~~~~~~~~--,,,,,,,,,,,,,...........T....^^^^^T^^^^^^^^^',
-    '~~~~~~~~~~~~~~--,###,###,###,................^^^^^^^T^^^^^^^',
-    '~~~~~~~~~~~~~~--,###,###,###,.......T........^^^^T^^^^^^^^^^',
-    '~~~~~~~~~~~~~~--,,,,,,,,,,,,,................^^^^^^^^^^^^^^^',
-    '~~~~~~~~~~~~~--.,###,,,,,###,................^^T^^T^^^^^^^^^',
-    '~~~~~~~~~~~~~~--,###,,,,,###,.........T......^T^^^^^^^^^^^^^',
-    '~~~~~~~~~~~~~~--,,,,,,,,,,,,,................^^^^^^^^^^^^^T^',
-    '~~~~~~~~~~~~~--.,###,###,###,................^T^T^^^^^^^^^^^',
-    '~~~~~~~~~~~~--..,###,###,###,......T.........^^^^^^^^^^^^T^^',
-    '~~~~~~~~~~~~--..,,,,,,,,,,,,,............T...^T^^^T^^^T^T^^T',
-    '~~~~~~~~~~~~--...............................^^^^^^^^^TT^^T^',
-    '~~~~~~~~~~~~--...............................^^^T^T^^^^^^T^^',
-    '~~~~~~~~~~~~--...............................^T^T^^^^^^^^T^T',
-    '~~~~~~~~~~~~--...............................^^^^^^T^^^^^^^^',
-];
-const SOLID_TILES = '~#BSZT';  // Auf diese Felder kann das Pferd nicht
-const TILE = SETTINGS.tileSize;
-const MAP_COLS = MAP[0].length;
-const MAP_ROWS = MAP.length;
-const WORLD_W = MAP_COLS * TILE;
-const WORLD_H = MAP_ROWS * TILE;
-
-// Orte mit Namen: Spalte und Zeile auf der Karte, wo der Name steht
-const PLACES = [
-  { name: 'Zugersee', col: 6, row: 20 },
-  { name: 'Seepromenade', col: 14, row: 12 },
-  { name: 'Altstadt', col: 22.5, row: 29.5 },
-  { name: 'Zytturm', col: 30, row: 23.3 },
-  { name: 'Bahnhof', col: 32, row: 7.4 },
-  { name: 'Stall', col: 32, row: 18.6 },
-  { name: 'Zugerberg', col: 52.5, row: 25 },
-];
-
-// ---------- Leinwand und Tasten ----------
+// ---------- Leinwand, Anzeigen und Tasten ----------
 const canvas = document.getElementById('game');
-const ctx = canvas.getContext('2d');
+const hud = {
+  start: document.getElementById('hud-start'),
+  end: document.getElementById('hud-ende'),
+  endTitle: document.getElementById('hud-ende-titel'),
+  endText: document.getElementById('hud-ende-text'),
+  bar: document.getElementById('hud-leiste'),
+  arrow: document.getElementById('hud-pfeil'),
+  goal: document.getElementById('hud-ziel'),
+  minimap: document.getElementById('hud-karte'),
+};
 const keys = new Set();
 const gameHasFocus = () => document.activeElement === canvas; // Tasten zählen nur nach einem Klick aufs Feld
 
@@ -818,338 +817,521 @@ addEventListener('keydown', e => {
 addEventListener('keyup', e => keys.delete(e.key.toLowerCase()));
 canvas.addEventListener('blur', () => keys.clear());
 canvas.addEventListener('click', () => canvas.focus());
+canvas.addEventListener('focus', showScreens);
+canvas.addEventListener('blur', showScreens);
 
 const pressed = (...names) => names.some(n => keys.has(n));
 
 // ---------- Spielzustand ----------
-const START_POS = { x: 32 * TILE, y: 21.5 * TILE };  // vor dem Stall
 const game = {
-  state: 'start',  // 'start' = Startbildschirm, 'play' = Reiten
-  time: 0,         // Sekunden seit dem Laden
-  horse: { x: START_POS.x, y: START_POS.y, facing: -1, moving: false, galloping: false, step: 0 },
-  camera: { x: 0, y: 0 },
+  state: 'start',     // 'start', 'play', 'won' oder 'lost'
+  timeLeft: SETTINGS.timeLimitSeconds, // Sekunden bis »Zeit um!«
+  carrots: 0,         // eingesammelte Karotten
+  score: 0,
+  horse: { x: 0, z: 0, heading: 0, speed: 0, step: 0 },
 };
 
-function startGame() {
-  game.state = 'play';
-  Object.assign(game.horse, { x: START_POS.x, y: START_POS.y, facing: -1, moving: false, galloping: false });
+// ---------- 3D-Grundgerüst: Renderer, Szene, Kamera, Licht ----------
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+renderer.setPixelRatio(Math.min(2, window.devicePixelRatio));
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(SETTINGS.colors.sky);
+scene.fog = new THREE.Fog(SETTINGS.colors.sky, SETTINGS.viewDistance * 0.5, SETTINGS.viewDistance);
+const camera = new THREE.PerspectiveCamera(60, canvas.width / canvas.height, 0.5, SETTINGS.viewDistance + 50);
+scene.add(new THREE.HemisphereLight('#ffffff', '#6b8f4a', 0.75));
+const sun = new THREE.DirectionalLight('#fff4dd', 0.8);
+sun.position.set(-0.5, 1, 0.3);
+scene.add(sun);
+
+// ---------- Hilfen: Farben und Formen zu einem grossen Klotz zusammenbauen ----------
+// Viele kleine Teile einzeln zu zeichnen ist langsam. Darum sammeln wir sie in einem »Baukasten«.
+function makeBuilder() { return { positions: [], colors: [] }; }
+
+function addToBuilder(builder, geometry, color) {
+  const geo = geometry.index ? geometry.toNonIndexed() : geometry;
+  const pos = geo.attributes.position.array;
+  const c = new THREE.Color(color);
+  for (let i = 0; i < pos.length; i += 3) {
+    builder.positions.push(pos[i], pos[i + 1], pos[i + 2]);
+    builder.colors.push(c.r, c.g, c.b);
+  }
 }
 
-// ---------- Hilfsfunktionen für die Karte ----------
-function tileAt(col, row) {
-  if (row < 0 || row >= MAP_ROWS || col < 0 || col >= MAP_COLS) return '~';  // Rand = Wasser
-  return MAP[row][col];
+function builderToMesh(builder) {
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(builder.positions, 3));
+  geo.setAttribute('color', new THREE.Float32BufferAttribute(builder.colors, 3));
+  geo.computeVertexNormals();
+  return new THREE.Mesh(geo, new THREE.MeshLambertMaterial({ vertexColors: true }));
 }
-function isSolidAt(x, y) {
-  return SOLID_TILES.includes(tileAt(Math.floor(x / TILE), Math.floor(y / TILE)));
+
+// Liste [x1, z1, x2, z2, ...] in Punkte umwandeln
+function toPoints(flat, start = 0) {
+  const pts = [];
+  for (let i = start; i < flat.length; i += 2) pts.push({ x: flat[i], z: flat[i + 1] });
+  return pts;
 }
-// Kann das Pferd hier stehen? Wir prüfen die vier Ecken seiner Hufe.
-function canStandAt(x, y) {
-  const r = SETTINGS.horseSize * 0.3;
-  return !isSolidAt(x - r, y - r) && !isSolidAt(x + r, y - r) && !isSolidAt(x - r, y + r) && !isSolidAt(x + r, y + r);
+
+// Flache Form am Boden (Wiese, Wald, See ...)
+function flatShape(points, height) {
+  const shape = new THREE.Shape(points.map(p => new THREE.Vector2(p.x, -p.z)));
+  const geo = new THREE.ShapeGeometry(shape);
+  geo.rotateX(-Math.PI / 2);
+  geo.translate(0, height, 0);
+  return geo;
 }
-// Zufallszahl, die für jedes Feld immer gleich bleibt (damit Dächer nicht flackern)
-function tileNoise(col, row) {
-  const n = Math.sin(col * 12.9898 + row * 78.233) * 43758.5453;
-  return n - Math.floor(n);
+
+// ---------- Welt bauen: Boden und Flächen ----------
+const MAP = KARTE;
+const AREA_COLORS = { wiese: SETTINGS.colors.meadow, wald: SETTINGS.colors.forestFloor, acker: SETTINGS.colors.field,
+  wasser: SETTINGS.colors.water, platz: SETTINGS.colors.square, wohnen: SETTINGS.colors.garden };
+
+function buildGround() {
+  const size = Math.max(MAP.width, MAP.depth) * 3;
+  const ground = new THREE.Mesh(new THREE.PlaneGeometry(size, size), new THREE.MeshLambertMaterial({ color: SETTINGS.colors.grass }));
+  ground.rotation.x = -Math.PI / 2;
+  scene.add(ground);
+  const builder = makeBuilder();
+  // Grosse Flächen zuerst, damit kleine darüber liegen
+  const order = ['acker', 'wohnen', 'wiese', 'wald', 'platz', 'wasser'];
+  for (const area of MAP.areas) {
+    const layer = order.indexOf(area[0]);
+    if (layer < 0) continue;
+    addToBuilder(builder, flatShape(toPoints(area, 1), 0.02 + layer * 0.02), AREA_COLORS[area[0]]);
+  }
+  scene.add(builderToMesh(builder));
 }
-// Wo ist ein grosses Gebäude (B, S, Z)? Gibt das Rechteck in Feldern zurück.
-function findBuilding(letter) {
-  let c0 = MAP_COLS, r0 = MAP_ROWS, c1 = -1, r1 = -1;
-  MAP.forEach((line, row) => [...line].forEach((ch, col) => {
-    if (ch !== letter) return;
-    c0 = Math.min(c0, col); r0 = Math.min(r0, row); c1 = Math.max(c1, col); r1 = Math.max(r1, row);
-  }));
-  return { x: c0 * TILE, y: r0 * TILE, w: (c1 - c0 + 1) * TILE, h: (r1 - r0 + 1) * TILE };
+
+// ---------- Welt bauen: Strassen, Wege, Bäche und Gleise ----------
+const ROAD_STYLES = [
+  { width: 8, color: SETTINGS.colors.bigRoad, height: 0.16 },   // 0 Hauptstrasse
+  { width: 5.5, color: SETTINGS.colors.road, height: 0.15 },    // 1 Quartierstrasse
+  { width: 2.5, color: SETTINGS.colors.path, height: 0.14 },    // 2 Fussweg, Velo
+  { width: 3, color: SETTINGS.colors.track, height: 0.13 },     // 3 Feldweg
+];
+
+// Ein Band entlang einer Linie, wie ein Streifen Klebeband
+function ribbon(builder, points, width, height, color) {
+  const c = new THREE.Color(color);
+  const push = (x, z) => { builder.positions.push(x, height, z); builder.colors.push(c.r, c.g, c.b); };
+  for (let i = 0; i < points.length - 1; i++) {
+    const a = points[i], b = points[i + 1];
+    const len = Math.hypot(b.x - a.x, b.z - a.z) || 1;
+    const nx = -(b.z - a.z) / len * width / 2, nz = (b.x - a.x) / len * width / 2;
+    push(a.x + nx, a.z + nz); push(b.x + nx, b.z + nz); push(a.x - nx, a.z - nz);
+    push(b.x + nx, b.z + nz); push(b.x - nx, b.z - nz); push(a.x - nx, a.z - nz);
+    // runde Ecke mit einem kleinen Achteck, damit Kurven keine Lücken haben
+    for (let k = 0; k < 8; k++) {
+      const a1 = k / 8 * Math.PI * 2, a2 = (k + 1) / 8 * Math.PI * 2, r = width / 2;
+      push(b.x, b.z); push(b.x + Math.cos(a2) * r, b.z + Math.sin(a2) * r); push(b.x + Math.cos(a1) * r, b.z + Math.sin(a1) * r);
+    }
+  }
 }
-const BUILDINGS = { bahnhof: findBuilding('B'), stall: findBuilding('S'), zytturm: findBuilding('Z') };
+
+function buildRoads() {
+  const builder = makeBuilder();
+  for (const river of MAP.rivers) ribbon(builder, toPoints(river, 1), river[0], 0.12, SETTINGS.colors.water);
+  for (const road of MAP.roads) {
+    const style = ROAD_STYLES[road[0]];
+    ribbon(builder, toPoints(road, 1), style.width, style.height, style.color);
+  }
+  for (const rail of MAP.rails) {
+    ribbon(builder, toPoints(rail), 3, 0.17, SETTINGS.colors.railBed);
+    ribbon(builder, toPoints(rail), 1.6, 0.18, SETTINGS.colors.rail);
+  }
+  const mesh = builderToMesh(builder);
+  mesh.geometry.computeVertexNormals();
+  scene.add(mesh);
+}
+
+// ---------- Welt bauen: Häuser als Klötze ----------
+const WALL_COLORS = ['#f2ece0', '#e9dcc5', '#f6f1e7', '#dfe6ec', '#efe0cf'];
+const ROOF_COLORS = ['#b8503a', '#8d4a3a', '#6c6f78', '#a5603f'];
+
+function buildHouses() {
+  const builder = makeBuilder();
+  MAP.buildings.forEach((b, i) => {
+    const points = toPoints(b, 1);
+    const shape = new THREE.Shape(points.map(p => new THREE.Vector2(p.x, -p.z)));
+    const geo = new THREE.ExtrudeGeometry(shape, { depth: b[0], bevelEnabled: false });
+    geo.rotateX(-Math.PI / 2);
+    const isGoal = i === MAP.goalBuilding;
+    const wall = isGoal ? SETTINGS.colors.goalHall : WALL_COLORS[i % WALL_COLORS.length];
+    const roof = isGoal ? SETTINGS.colors.goalRoof : ROOF_COLORS[i % ROOF_COLORS.length];
+    const flat = geo.index ? geo.toNonIndexed() : geo;
+    flat.computeVertexNormals();
+    const pos = flat.attributes.position.array, nor = flat.attributes.normal.array;
+    const cw = new THREE.Color(wall), cr = new THREE.Color(roof);
+    for (let k = 0; k < pos.length; k += 3) {
+      builder.positions.push(pos[k], pos[k + 1], pos[k + 2]);
+      const c = nor[k + 1] > 0.5 ? cr : cw;                // nach oben zeigt = Dach
+      builder.colors.push(c.r, c.g, c.b);
+    }
+  });
+  scene.add(builderToMesh(builder));
+}
+
+// ---------- Welt bauen: Klötzchen-Bäume ----------
+function buildTrees() {
+  const trees = MAP.trees;
+  const count = trees.length / 2;
+  const trunk = new THREE.InstancedMesh(new THREE.BoxGeometry(0.7, 3, 0.7), new THREE.MeshLambertMaterial({ color: '#7a5230' }), count);
+  const leaves = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshLambertMaterial({ color: '#ffffff' }), count);
+  const m = new THREE.Matrix4(), color = new THREE.Color();
+  for (let i = 0; i < count; i++) {
+    const x = trees[i * 2], z = trees[i * 2 + 1];
+    const size = 3.5 + (i * 7919 % 100) / 40;          // jeder Baum etwas anders gross
+    m.makeTranslation(x, 1.5, z);
+    trunk.setMatrixAt(i, m);
+    m.makeScale(size, size, size).setPosition(x, 3 + size / 2, z);
+    leaves.setMatrixAt(i, m);
+    leaves.setColorAt(i, color.set(SETTINGS.colors.leaves[i % SETTINGS.colors.leaves.length]));
+  }
+  scene.add(trunk, leaves);
+}
+
+// ---------- Schilder: Text, der über der Welt schwebt ----------
+function makeSign(text, x, y, z, scale) {
+  const c = document.createElement('canvas');
+  c.width = 512; c.height = 128;
+  const g = c.getContext('2d');
+  g.fillStyle = 'rgba(18,40,90,0.85)';
+  g.beginPath(); g.roundRect(4, 4, 504, 120, 30); g.fill();
+  g.fillStyle = '#fff';
+  g.font = 'bold 64px system-ui, sans-serif';
+  g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.fillText(text, 256, 68);
+  const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(c), fog: false }));
+  sprite.position.set(x, y, z);
+  sprite.scale.set(scale * 4, scale, 1);
+  scene.add(sprite);
+  return sprite;
+}
+
+// ---------- Ziel: Lichtsäule über der OYM-Halle ----------
+function buildGoal() {
+  const [x, z] = MAP.goal;
+  const beam = new THREE.Mesh(new THREE.CylinderGeometry(4, 4, 200, 16, 1, true),
+    new THREE.MeshBasicMaterial({ color: SETTINGS.colors.goalBeam, transparent: true, opacity: 0.35, side: THREE.DoubleSide, fog: false }));
+  beam.position.set(x, 100, z);
+  scene.add(beam);
+  makeSign('🏟️ ' + MAP.goalName, x, 45, z, 10);
+  const [hx, hz] = MAP.start;
+  makeSign('🏠 Zuhause', hx, 14, hz, 4);
+}
+
+// ---------- Das Pferd aus Klötzen ----------
+function box(w, h, d, color, x, y, z) {
+  const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), new THREE.MeshLambertMaterial({ color }));
+  mesh.position.set(x, y, z);
+  return mesh;
+}
+
+function buildHorse() {
+  const c = SETTINGS.colors;
+  const horse = new THREE.Group();
+  horse.add(box(1.1, 1.1, 2.4, c.horse, 0, 1.9, 0));            // Bauch
+  horse.add(box(0.6, 1.2, 0.6, c.horse, 0, 2.7, 1.1));          // Hals
+  horse.add(box(0.6, 0.6, 1.1, c.horse, 0, 3.2, 1.55));         // Kopf
+  horse.add(box(0.62, 0.3, 0.3, c.horseNose, 0, 3.05, 2.0));    // Nase
+  horse.add(box(0.2, 1.2, 0.2, c.mane, 0, 2.8, 0.75));          // Mähne
+  horse.add(box(0.16, 0.3, 0.12, c.horse, 0.2, 3.6, 1.25));     // Ohr
+  horse.add(box(0.16, 0.3, 0.12, c.horse, -0.2, 3.6, 1.25));    // Ohr
+  horse.add(box(0.08, 0.1, 0.1, '#111', 0.31, 3.3, 1.7));       // Auge
+  horse.add(box(0.08, 0.1, 0.1, '#111', -0.31, 3.3, 1.7));      // Auge
+  const tail = box(0.25, 1.1, 0.25, c.mane, 0, 1.8, -1.3);       // Schweif
+  tail.rotation.x = 0.4;
+  horse.add(tail);
+  horse.add(box(1.15, 0.15, 0.9, c.saddle, 0, 2.5, 0));         // Sattel
+  // Reiterin oder Reiter
+  horse.add(box(0.7, 0.9, 0.45, c.riderShirt, 0, 3.05, -0.05));
+  horse.add(box(0.5, 0.5, 0.5, c.riderSkin, 0, 3.75, -0.05));
+  horse.add(box(0.56, 0.22, 0.56, c.riderHelmet, 0, 4.05, -0.05));
+  // Beine bekommen ein Gelenk oben, damit sie schwingen können
+  const legs = [];
+  for (const [x, z] of [[0.35, 0.9], [-0.35, 0.9], [0.35, -0.9], [-0.35, -0.9]]) {
+    const hip = new THREE.Group();
+    hip.position.set(x, 1.4, z);
+    hip.add(box(0.3, 1.4, 0.3, c.horse, 0, -0.7, 0));
+    hip.add(box(0.34, 0.2, 0.34, c.hoof, 0, -1.35, 0));
+    horse.add(hip);
+    legs.push(hip);
+  }
+  horse.userData.legs = legs;
+  scene.add(horse);
+  return horse;
+}
+
+// ---------- Karotten zum Einsammeln ----------
+function buildCarrots() {
+  const list = [];
+  for (let i = 0; i < MAP.carrots.length; i += 2) {
+    const carrot = new THREE.Group();
+    carrot.add(box(0.5, 1.2, 0.5, '#ff8a1e', 0, 0, 0));
+    carrot.add(box(0.3, 0.5, 0.3, '#3fae3f', 0, 0.85, 0));
+    carrot.position.set(MAP.carrots[i], 1.5, MAP.carrots[i + 1]);
+    scene.add(carrot);
+    list.push(carrot);
+  }
+  return list;
+}
+
+// ---------- Hindernisse: Häuser und See ----------
+// Die Welt ist in Felder von 25 m geteilt. So müssen wir nur Häuser in der Nähe prüfen.
+const GRID = 25;
+const solidGrid = new Map();
+const solids = [...MAP.buildings.map(b => toPoints(b, 1)), ...MAP.areas.filter(a => a[0] === 'wasser').map(a => toPoints(a, 1))];
+
+function gridKey(x, z) { return Math.floor(x / GRID) + ',' + Math.floor(z / GRID); }
+
+function buildSolidGrid() {
+  solids.forEach((poly, i) => {
+    const xs = poly.map(p => p.x), zs = poly.map(p => p.z);
+    for (let gx = Math.floor(Math.min(...xs) / GRID); gx <= Math.floor(Math.max(...xs) / GRID); gx++) {
+      for (let gz = Math.floor(Math.min(...zs) / GRID); gz <= Math.floor(Math.max(...zs) / GRID); gz++) {
+        const k = gx + ',' + gz;
+        if (!solidGrid.has(k)) solidGrid.set(k, []);
+        solidGrid.get(k).push(i);
+      }
+    }
+  });
+}
+
+function insidePolygon(x, z, poly) {
+  let inside = false;
+  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    const a = poly[i], b = poly[j];
+    if ((a.z > z) !== (b.z > z) && x < (b.x - a.x) * (z - a.z) / (b.z - a.z) + a.x) inside = !inside;
+  }
+  return inside;
+}
+
+function isBlocked(x, z) {
+  if (x < 0 || z < 0 || x > MAP.width || z > MAP.depth) return true;   // Rand der Karte
+  const r = SETTINGS.horseRadius;
+  for (const [dx, dz] of [[0, 0], [r, 0], [-r, 0], [0, r], [0, -r]]) {
+    for (const i of solidGrid.get(gridKey(x + dx, z + dz)) || []) {
+      if (insidePolygon(x + dx, z + dz, solids[i])) return true;
+    }
+  }
+  return false;
+}
+
+// ---------- Übersichtskarte unten rechts ----------
+const minimapScale = hud.minimap.width / Math.max(MAP.width, MAP.depth);
+const minimapBase = document.createElement('canvas');
+
+function drawMinimapBase() {
+  minimapBase.width = hud.minimap.width;
+  minimapBase.height = hud.minimap.height;
+  const g = minimapBase.getContext('2d');
+  g.fillStyle = SETTINGS.colors.grass;
+  g.fillRect(0, 0, minimapBase.width, minimapBase.height);
+  const line = (pts, color, width) => {
+    g.strokeStyle = color; g.lineWidth = width; g.beginPath();
+    pts.forEach((p, i) => (i ? g.lineTo : g.moveTo).call(g, p.x * minimapScale, p.z * minimapScale));
+    g.stroke();
+  };
+  for (const a of MAP.areas) {
+    g.fillStyle = AREA_COLORS[a[0]] || SETTINGS.colors.grass;
+    g.beginPath();
+    toPoints(a, 1).forEach((p, i) => (i ? g.lineTo : g.moveTo).call(g, p.x * minimapScale, p.z * minimapScale));
+    g.fill();
+  }
+  g.fillStyle = '#9a9a9a';
+  for (const b of MAP.buildings) {
+    g.beginPath();
+    toPoints(b, 1).forEach((p, i) => (i ? g.lineTo : g.moveTo).call(g, p.x * minimapScale, p.z * minimapScale));
+    g.fill();
+  }
+  for (const road of MAP.roads) if (road[0] < 2) line(toPoints(road, 1), '#ffffff', road[0] === 0 ? 2.5 : 1.5);
+}
+
+function drawMinimap() {
+  const g = hud.minimap.getContext('2d');
+  g.drawImage(minimapBase, 0, 0);
+  const dot = (x, z, color, size) => {
+    g.fillStyle = color; g.beginPath();
+    g.arc(x * minimapScale, z * minimapScale, size, 0, Math.PI * 2); g.fill();
+  };
+  dot(MAP.start[0], MAP.start[1], '#1b6ec2', 4);
+  dot(MAP.goal[0], MAP.goal[1], '#ff3d7f', 6);
+  const h = game.horse;
+  g.save();                                               // Pferd als Pfeil
+  g.translate(h.x * minimapScale, h.z * minimapScale);
+  g.rotate(-h.heading);
+  g.fillStyle = '#ffd54a'; g.strokeStyle = '#000'; g.lineWidth = 1.5;
+  g.beginPath(); g.moveTo(0, 7); g.lineTo(5, -5); g.lineTo(-5, -5); g.closePath();
+  g.fill(); g.stroke();
+  g.restore();
+}
+
+// ---------- Geräusche aus WebAudio ----------
+let audio = null;
+function beep(freq, duration) {
+  try {
+    audio = audio || new AudioContext();
+    const osc = audio.createOscillator(), gain = audio.createGain();
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(0.15, audio.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audio.currentTime + duration);
+    osc.connect(gain).connect(audio.destination);
+    osc.start(); osc.stop(audio.currentTime + duration);
+  } catch (e) { /* kein Ton möglich: macht nichts */ }
+}
+
+// ---------- Spiel starten und beenden ----------
+let horseModel, carrots;
+
+function startGame() {
+  const h = game.horse;
+  [h.x, h.z] = MAP.start;
+  h.heading = MAP.startHeading;
+  h.speed = 0;
+  game.timeLeft = SETTINGS.timeLimitSeconds;
+  game.carrots = 0;
+  game.score = 0;
+  game.state = 'play';
+  carrots.forEach(c => { c.visible = true; });
+  snapCamera();
+  showScreens();
+}
+
+function endGame(won) {
+  game.state = won ? 'won' : 'lost';
+  game.score = game.carrots * SETTINGS.pointsPerCarrot + (won ? Math.ceil(game.timeLeft) * SETTINGS.pointsPerSecondLeft : 0);
+  hud.endTitle.textContent = won ? '🎉 Geschafft!' : '⏰ Zeit um!';
+  hud.endText.textContent = (won ? 'Du bist bei der ' + MAP.goalName + ' angekommen. ' : 'Die OYM-Halle war noch zu weit weg. ') +
+    'Karotten: ' + game.carrots + ' · Punkte: ' + game.score;
+  if (won) [523, 659, 784].forEach((f, i) => setTimeout(() => beep(f, 0.25), i * 150));
+  showScreens();
+}
+
+function showScreens() {
+  hud.start.hidden = game.state !== 'start';
+  hud.end.hidden = game.state !== 'won' && game.state !== 'lost';
+  hud.start.querySelector('.start-hinweis').textContent = gameHasFocus() ? 'Drücke Enter zum Starten' : '👆 Zuerst aufs Spielfeld klicken';
+}
 
 // ---------- Pferd bewegen ----------
 function updateHorse(dt) {
   const h = game.horse;
-  let dx = pressed('arrowright', 'd') - pressed('arrowleft', 'a');
-  let dy = pressed('arrowdown', 's') - pressed('arrowup', 'w');
-  if (dx && dy) { dx *= Math.SQRT1_2; dy *= Math.SQRT1_2; }  // schräg nicht schneller
-  h.galloping = pressed(' ');
-  const speed = h.galloping ? SETTINGS.gallopSpeed : SETTINGS.walkSpeed;
-  h.moving = dx !== 0 || dy !== 0;
-  if (dx) h.facing = dx > 0 ? 1 : -1;
-  // Zuerst links/rechts, dann hoch/runter: so rutscht das Pferd an Wänden entlang
-  const newX = h.x + dx * speed * dt;
-  if (canStandAt(newX, h.y)) h.x = newX;
-  const newY = h.y + dy * speed * dt;
-  if (canStandAt(h.x, newY)) h.y = newY;
-  if (h.moving) h.step += dt * speed / 25;
+  const turn = pressed('arrowleft', 'a') - pressed('arrowright', 'd');
+  const forward = pressed('arrowup', 'w'), back = pressed('arrowdown', 's');
+  let target = 0;
+  if (forward) target = pressed(' ') ? SETTINGS.gallopSpeed : SETTINGS.walkSpeed;
+  if (back) target = -SETTINGS.backSpeed;
+  h.speed += (target - h.speed) * Math.min(1, dt * SETTINGS.acceleration);
+  h.heading += turn * SETTINGS.turnSpeed * dt;
+  // Zuerst in x-Richtung, dann in z-Richtung: so rutscht das Pferd an Hauswänden entlang
+  const nx = h.x + Math.sin(h.heading) * h.speed * dt;
+  const nz = h.z + Math.cos(h.heading) * h.speed * dt;
+  if (!isBlocked(nx, h.z)) h.x = nx; else h.speed *= 0.9;
+  if (!isBlocked(h.x, nz)) h.z = nz; else h.speed *= 0.9;
+  h.step += dt * Math.abs(h.speed) * 1.6;
 }
 
-// ---------- Kamera folgt dem Pferd ----------
-function updateCamera() {
-  const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
-  game.camera.x = clamp(game.horse.x - canvas.width / 2, 0, WORLD_W - canvas.width);
-  game.camera.y = clamp(game.horse.y - canvas.height / 2, 0, WORLD_H - canvas.height);
-}
-
-// ---------- Welcher Ort ist am nächsten? ----------
-function nearestPlace() {
-  let best = PLACES[0], bestDist = Infinity;
-  for (const p of PLACES) {
-    const d = Math.hypot(p.col * TILE - game.horse.x, p.row * TILE - game.horse.y);
-    if (d < bestDist) { best = p; bestDist = d; }
-  }
-  return best.name;
-}
-
-// ---------- Zeichnen: Boden und kleine Dinge ----------
-function drawEmoji(emoji, x, y, size) {
-  ctx.font = size + 'px serif';
-  ctx.fillStyle = '#000';                          // volle Farbe, sonst wird das Emoji durchsichtig
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText(emoji, x, y);
-}
-
-function groundColor(ch, col) {
-  const c = SETTINGS.colors;
-  if (ch === '~') return c.lake;
-  if (ch === '-') return c.promenade;
-  if (ch === ',') return c.street;
-  if (ch === '^' || (ch === 'T' && col >= 45)) return c.hill;
-  return c.grass;
-}
-
-function drawTile(ch, col, row) {
-  const x = col * TILE, y = row * TILE;
-  ctx.fillStyle = groundColor(ch, col);
-  ctx.fillRect(x, y, TILE + 1, TILE + 1);
-  if (ch === '~') drawWave(x, y, col, row);
-  if (ch === '=') drawRails(x, y);
-  if (ch === '#') drawHouse(x, y, col, row);
-  if (ch === 'T') drawEmoji(col >= 45 ? '🌲' : '🌳', x + TILE / 2, y + TILE / 2, TILE * 0.9);
-  if (ch === '.' && tileNoise(col, row) < 0.06) drawEmoji('🌼', x + TILE / 2, y + TILE / 2, TILE * 0.35);
-}
-
-function drawWave(x, y, col, row) {
-  const shift = Math.sin(game.time * 2 + col + row * 0.7) * 6;
-  ctx.strokeStyle = 'rgba(255,255,255,0.35)';
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.arc(x + TILE / 2 + shift, y + TILE / 2, 8, Math.PI * 1.1, Math.PI * 1.9);
-  ctx.stroke();
-}
-
-function drawRails(x, y) {
-  ctx.fillStyle = '#8a6a4a';                       // Holzschwellen
-  for (let i = 0; i < 3; i++) ctx.fillRect(x + 4 + i * 16, y + 4, 6, TILE - 8);
-  ctx.fillStyle = '#5b5f6b';                       // Schienen
-  ctx.fillRect(x, y + 12, TILE + 1, 4);
-  ctx.fillRect(x, y + TILE - 16, TILE + 1, 4);
-}
-
-function drawHouse(x, y, col, row) {
-  const roofs = [SETTINGS.colors.roof, '#a8432f', '#d9773c'];
-  ctx.fillStyle = SETTINGS.colors.house;
-  ctx.fillRect(x + 1, y + 1, TILE - 2, TILE - 2);
-  ctx.fillStyle = roofs[Math.floor(tileNoise(col, row) * roofs.length)];
-  ctx.fillRect(x + 1, y + 1, TILE - 2, TILE * 0.62);
-  ctx.fillStyle = 'rgba(0,0,0,0.18)';              // Dachfirst
-  ctx.fillRect(x + 1, y + TILE * 0.3, TILE - 2, 3);
-  ctx.fillStyle = '#7fb3e0';                       // Fenster
-  ctx.fillRect(x + TILE * 0.3, y + TILE * 0.7, 8, 8);
-}
-
-// ---------- Zeichnen: die grossen Gebäude ----------
-function drawStall(b) {
-  ctx.fillStyle = '#a8703f';                       // Holzwände
-  ctx.fillRect(b.x + 4, b.y + 4, b.w - 8, b.h - 8);
-  ctx.fillStyle = SETTINGS.colors.zugBlue;         // blaues Dach
-  ctx.fillRect(b.x + 4, b.y + 4, b.w - 8, b.h * 0.55);
-  ctx.fillStyle = '#fff';                          // weisser Streifen
-  ctx.fillRect(b.x + 4, b.y + b.h * 0.25, b.w - 8, 8);
-  ctx.fillStyle = '#5a3a1e';                       // Tor
-  ctx.fillRect(b.x + b.w / 2 - 22, b.y + b.h - 44, 44, 40);
-  drawZugFlag(b.x + b.w - 16, b.y - 30);
-}
-
-function drawZugFlag(x, y) {
-  ctx.fillStyle = '#555';
-  ctx.fillRect(x, y, 3, 44);                       // Fahnenstange
-  const wave = Math.sin(game.time * 4) * 2;
-  ctx.fillStyle = '#fff';
-  ctx.fillRect(x + 3, y + wave, 30, 20);
-  ctx.fillStyle = SETTINGS.colors.zugBlue;         // Zuger Fahne: weiss, blau, weiss
-  ctx.fillRect(x + 3, y + 7 + wave, 30, 6);
-}
-
-function drawBahnhof(b) {
-  ctx.fillStyle = '#d6d9e0';
-  ctx.fillRect(b.x + 2, b.y + 2, b.w - 4, b.h - 4);
-  ctx.fillStyle = '#596173';                       // Dach
-  ctx.fillRect(b.x + 2, b.y + 2, b.w - 4, b.h * 0.45);
-  ctx.fillStyle = '#e03a3a';                       // rotes Schild
-  ctx.fillRect(b.x + b.w / 2 - 50, b.y + b.h * 0.55, 100, 22);
-  ctx.fillStyle = '#fff';
-  ctx.font = 'bold 15px system-ui, sans-serif';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText('ZUG', b.x + b.w / 2, b.y + b.h * 0.55 + 11);
-  drawEmoji('🕐', b.x + 30, b.y + b.h * 0.7, 22);
-}
-
-function drawZytturm(b) {
-  const top = b.y - TILE;                          // der Turm ragt hoch hinaus
-  ctx.fillStyle = '#e8dcc4';
-  ctx.fillRect(b.x + 8, top + 30, b.w - 16, b.h + TILE - 34);
-  // Dach mit blau-weissem Muster, wie der echte Zytturm
-  for (let i = 0; i < 4; i++) {
-    ctx.fillStyle = i % 2 ? '#fff' : SETTINGS.colors.zugBlue;
-    ctx.fillRect(b.x + 4 + i * (b.w - 8) / 4, top, (b.w - 8) / 4, 34);
-  }
-  ctx.beginPath();                                  // Turmspitze
-  ctx.moveTo(b.x + 4, top);
-  ctx.lineTo(b.x + b.w / 2, top - 30);
-  ctx.lineTo(b.x + b.w - 4, top);
-  ctx.fillStyle = SETTINGS.colors.zugBlue;
-  ctx.fill();
-  ctx.fillStyle = '#fff';                          // Uhr
-  ctx.beginPath();
-  ctx.arc(b.x + b.w / 2, top + 60, 14, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.strokeStyle = '#222';
-  ctx.lineWidth = 2;
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.moveTo(b.x + b.w / 2, top + 60);
-  ctx.lineTo(b.x + b.w / 2, top + 50);
-  ctx.moveTo(b.x + b.w / 2, top + 60);
-  ctx.lineTo(b.x + b.w / 2 + 7, top + 60);
-  ctx.stroke();
-}
-
-// ---------- Zeichnen: Zug und Schiff fahren herum ----------
-function drawTrainAndBoat() {
-  const trainLength = 3 * TILE;
-  const trackStart = 14 * TILE;
-  const trackLength = WORLD_W - trackStart + trainLength;
-  const trainX = WORLD_W - ((game.time * SETTINGS.trainSpeed) % trackLength);
-  ctx.textAlign = 'left';
-  ctx.textBaseline = 'middle';
-  ctx.font = TILE * 0.9 + 'px serif';
-  ctx.save();
-  ctx.beginPath();
-  ctx.rect(trackStart, 0, WORLD_W - trackStart, WORLD_H);  // Zug nur auf den Gleisen zeigen
-  ctx.clip();
-  ctx.fillText('🚂🚃🚃', trainX, 4.5 * TILE + 4);
-  ctx.restore();
-
-  const route = 30 * TILE;                         // das Schiff fährt hin und her
-  const pos = (game.time * SETTINGS.boatSpeed) % (route * 2);
-  const boatY = 4 * TILE + (pos < route ? pos : route * 2 - pos);
-  drawEmoji('🚢', 5 * TILE, boatY, TILE);
-}
-
-// ---------- Zeichnen: das Pferd ----------
-function drawHorse() {
-  const h = game.horse;
-  const bob = h.moving ? Math.abs(Math.sin(h.step)) * -5 : 0;
-  ctx.fillStyle = 'rgba(0,0,0,0.2)';               // Schatten
-  ctx.beginPath();
-  ctx.ellipse(h.x, h.y + SETTINGS.horseSize * 0.4, SETTINGS.horseSize * 0.4, 6, 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.save();
-  ctx.translate(h.x, h.y + bob);
-  ctx.scale(SETTINGS.horseLooksLeft ? -h.facing : h.facing, 1);  // Emoji in Reitrichtung spiegeln
-  drawEmoji(SETTINGS.horse, 0, 0, SETTINGS.horseSize);
-  ctx.restore();
-  drawLabel(SETTINGS.horseName, h.x, h.y - SETTINGS.horseSize * 0.75, 14);
-}
-
-function drawLabel(text, x, y, size) {
-  ctx.font = 'bold ' + size + 'px system-ui, sans-serif';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.lineWidth = 4;
-  ctx.lineJoin = 'round';
-  ctx.strokeStyle = 'rgba(20,30,60,0.75)';
-  ctx.strokeText(text, x, y);
-  ctx.fillStyle = '#fff';
-  ctx.fillText(text, x, y);
-}
-
-// ---------- Zeichnen: die ganze Welt ----------
-function drawWorld() {
-  const cam = game.camera;
-  ctx.save();
-  ctx.translate(-Math.round(cam.x), -Math.round(cam.y));
-  const firstCol = Math.floor(cam.x / TILE), lastCol = Math.ceil((cam.x + canvas.width) / TILE);
-  const firstRow = Math.floor(cam.y / TILE), lastRow = Math.ceil((cam.y + canvas.height) / TILE);
-  for (let row = firstRow; row <= lastRow; row++) {
-    for (let col = firstCol; col <= lastCol; col++) {
-      if (row < MAP_ROWS && col < MAP_COLS) drawTile(MAP[row][col], col, row);
+function updateCarrots(t) {
+  carrots.forEach((c, i) => {
+    if (!c.visible) return;
+    c.rotation.y = t * 2 + i;
+    c.position.y = 1.5 + Math.sin(t * 3 + i) * 0.3;
+    if (Math.hypot(c.position.x - game.horse.x, c.position.z - game.horse.z) < SETTINGS.pickupDistance) {
+      c.visible = false;
+      game.carrots++;
+      beep(880, 0.15);
     }
-  }
-  drawBahnhof(BUILDINGS.bahnhof);
-  drawStall(BUILDINGS.stall);
-  drawTrainAndBoat();
-  drawHorse();
-  drawZytturm(BUILDINGS.zytturm);                  // der Turm ist hoch, darum zuletzt
-  if (SETTINGS.showPlaceNames) {
-    for (const p of PLACES) drawLabel(p.name, p.col * TILE, p.row * TILE, 22);
-  }
-  ctx.restore();
+  });
 }
 
-// ---------- Zeichnen: Anzeige oben ----------
-function drawHud() {
+function reachedGoal() {
+  return Math.hypot(MAP.goal[0] - game.horse.x, MAP.goal[1] - game.horse.z) < MAP.goalRadius;
+}
+
+// ---------- Pferd und Kamera auf den Bildschirm ----------
+function placeHorseModel() {
   const h = game.horse;
-  const text = SETTINGS.horse + ' ' + SETTINGS.horseName + '   📍 ' + nearestPlace() + (h.galloping && h.moving ? '   💨 Galopp!' : '');
-  ctx.font = 'bold 18px system-ui, sans-serif';
-  const w = ctx.measureText(text).width + 28;
-  ctx.fillStyle = 'rgba(18,30,60,0.75)';
-  roundRect(12, 12, w, 38, 12);
-  ctx.fillStyle = '#fff';
-  ctx.textAlign = 'left';
-  ctx.textBaseline = 'middle';
-  ctx.fillText(text, 26, 31);
-  drawLabel('R = Neustart', canvas.width - 70, 30, 15);
+  horseModel.position.set(h.x, Math.abs(Math.sin(h.step)) * Math.min(0.25, Math.abs(h.speed) / 40), h.z);
+  horseModel.rotation.y = h.heading;
+  const swing = Math.sin(h.step) * Math.min(0.7, Math.abs(h.speed) / 6);
+  horseModel.userData.legs.forEach((leg, i) => { leg.rotation.x = (i === 0 || i === 3) ? swing : -swing; });
 }
 
-function roundRect(x, y, w, h, r) {
-  ctx.beginPath();
-  ctx.roundRect(x, y, w, h, r);
-  ctx.fill();
+function cameraTarget() {
+  const h = game.horse;
+  const sin = Math.sin(h.heading), cos = Math.cos(h.heading);
+  return {
+    pos: new THREE.Vector3(h.x - sin * SETTINGS.cameraDistance, SETTINGS.cameraHeight, h.z - cos * SETTINGS.cameraDistance),
+    look: new THREE.Vector3(h.x + sin * 6, 2.5, h.z + cos * 6),
+  };
+}
+let cameraLook = new THREE.Vector3();
+function snapCamera() {
+  const t = cameraTarget();
+  camera.position.copy(t.pos);
+  cameraLook.copy(t.look);
+  camera.lookAt(cameraLook);
+}
+function updateCamera(dt) {
+  const t = cameraTarget();
+  const k = Math.min(1, dt * 4);                           // weich hinterherfliegen
+  camera.position.lerp(t.pos, k);
+  cameraLook.lerp(t.look, k);
+  camera.lookAt(cameraLook);
 }
 
-// ---------- Zeichnen: Startbildschirm ----------
-function drawStartScreen() {
-  ctx.fillStyle = 'rgba(18,40,90,0.72)';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-  const mid = canvas.width / 2;
-  drawEmoji('🐎📦🏔️', mid, 90, 64);
-  drawLabel('Horse World', mid, 175, 64);
-  drawLabel('(Switzerland)', mid, 225, 28);
-  drawLabel('Reite mit ' + SETTINGS.horseName + ' durch Zug!', mid, 285, 24);
-  ctx.font = '18px system-ui, sans-serif';
-  ctx.fillStyle = '#dfe9ff';
-  ctx.textAlign = 'center';
-  ctx.fillText('WASD oder Pfeiltasten = reiten   ·   Leertaste = Galopp   ·   R = Neustart', mid, 340);
-  const blink = Math.floor(game.time * 2) % 2 === 0;
-  if (!gameHasFocus()) drawLabel('👆 Zuerst aufs Spielfeld klicken', mid, 420, 26);
-  else if (blink) drawLabel('Drücke Enter zum Starten', mid, 420, 30);
+// ---------- Anzeige oben: Zeit, Punkte, Pfeil zum Ziel ----------
+function updateHud() {
+  const h = game.horse;
+  const sec = Math.max(0, Math.ceil(game.timeLeft));
+  const clock = Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0');
+  const pace = h.speed > SETTINGS.walkSpeed + 1 ? '   💨 Galopp!' : '';
+  hud.bar.textContent = '⏱️ ' + clock + '   🥕 ' + game.carrots + '   ⭐ ' + game.carrots * SETTINGS.pointsPerCarrot + pace;
+  hud.bar.classList.toggle('knapp', sec <= 30);
+  const dx = MAP.goal[0] - h.x, dz = MAP.goal[1] - h.z;
+  const dist = Math.hypot(dx, dz);
+  const angle = Math.atan2(dx, dz) - h.heading;            // wohin, von der Reitrichtung aus gesehen
+  hud.arrow.style.transform = 'rotate(' + (-angle) + 'rad)';
+  hud.goal.textContent = MAP.goalName + ': ' + (dist > 1000 ? (dist / 1000).toFixed(1) + ' km' : Math.round(dist) + ' m');
+  drawMinimap();
 }
 
 // ---------- Die Spielschleife: lesen, bewegen, prüfen, zeichnen ----------
-let lastTime = performance.now();
+let lastTime = performance.now(), totalTime = 0;
 function loop(now) {
   const dt = Math.min(0.05, (now - lastTime) / 1000);
   lastTime = now;
-  game.time += dt;
-  if (game.state === 'play') updateHorse(dt);
-  updateCamera();
-  drawWorld();
-  if (game.state === 'play') drawHud();
-  else drawStartScreen();
+  totalTime += dt;
+  if (game.state === 'play') {
+    updateHorse(dt);
+    updateCarrots(totalTime);
+    game.timeLeft -= dt;
+    if (reachedGoal()) endGame(true);
+    else if (game.timeLeft <= 0) endGame(false);
+  } else if (game.state === 'start') {
+    game.horse.heading += dt * 0.3;                         // langsam ums Pferd herumfliegen
+  }
+  placeHorseModel();
+  updateCamera(dt);
+  updateHud();
+  renderer.render(scene, camera);
   requestAnimationFrame(loop);
 }
+
+// ---------- Los geht's: Welt bauen und Schleife starten ----------
+buildGround();
+buildRoads();
+buildHouses();
+buildTrees();
+buildGoal();
+buildSolidGrid();
+drawMinimapBase();
+horseModel = buildHorse();
+carrots = buildCarrots();
+[game.horse.x, game.horse.z] = MAP.start;
+game.horse.heading = MAP.startHeading;
+snapCamera();
+showScreens();
 window.__game = game; // für den Roboter-Tester
 requestAnimationFrame(loop);
 </script>

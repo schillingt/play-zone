@@ -144,7 +144,7 @@ Ein Parcours mit 8 nummerierten Hindernissen: Steilsprünge, Oxer und ein Wasser
 Eine zweite Session baut gerade die 3D-Welt. Damit beide dasselbe Pferd zeigen:
 
 - Rassen, Fellfarben, Sättel, Zäume und Gamaschen stehen **einmal** in `SETTINGS`, mit festen Namen und Farbcodes. Beide Teile lesen dieselbe Liste.
-- **Zu klären:** `CLAUDE.md` erlaubt keine Fremdbibliotheken, also kein three.js. Entweder bekommt die 3D-Welt dafür eine Ausnahme, oder sie wird mit reinem Canvas gebaut.
+- Die 3D-Welt darf three.js benutzen. Das ist die einzige Fremdbibliothek, mit fester Version und ohne Build-Schritt.
 - **Zu klären:** Beide Sessions ändern `index.html`. Teil G wird erst gebaut, wenn die 3D-Welt gemergt ist, damit es keine Konflikte gibt.
 
 ## Die Karte von Zug

@@ -4,7 +4,7 @@ A just-for-fun browser game built live with a kid (age 12-14) on a laptop. The g
 
 ## Rules
 
-- The whole game lives in `index.html`: plain JavaScript and Canvas, no build step, no npm dependencies, no CDN scripts. Images or sounds, if any, go in `assets/`.
+- The whole game lives in `index.html`: plain JavaScript and Canvas, no build step, no npm dependencies, no CDN scripts. Exception: three.js is allowed for the 3D world (pinned exact version, still no build step). Images or sounds, if any, go in `assets/`.
 - Keyboard controls (arrows and WASD). Touch support is not needed.
 - Graphics are emoji or simple canvas shapes; sounds are generated with WebAudio. Do not add asset files unless asked.
 - Keep the `SETTINGS` block at the top of the script. Every tunable number (speed, gravity, lives, spawn rate, colours, emoji) goes there with a short comment, so the kid can change it by hand.

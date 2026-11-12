@@ -109,7 +109,7 @@ Jede App entsteht in denselben sieben Phasen. Phase 1 bis 3 machen wir am Anfang
 
 **Zurückgehen ist erlaubt.** Fällt beim Testen auf, dass etwas nicht zusammenpasst, gehen wir zum Design oder zum Plan zurück.
 
-**Wo wir stehen:** Idee und Plan sind fertig. Wir sind in Phase 3, dem Design. Danach beginnt Phase 4 mit Schritt 1.
+**Wo wir stehen:** Schritte 1 bis 3 sind gebaut (Startbildschirm, Karte von Zug, Pferd reiten). Als Nächstes kommt Schritt 4: Aufträge und Pfeil.
 
 ## Die Schritte
 

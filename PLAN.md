@@ -101,43 +101,43 @@ Jede Box hat:
 
 ### Die Pferde
 
-Am Anfang stehen 6 Pferde im Stall. Name, Rasse und Fellfarbe werden zufällig ausgewählt. Jedes Spiel hat also andere Pferde.
+Am Anfang stehen 6 Pferde im Stall. Name, Rasse und Fellfarbe sind zufällig, damit jedes Pferd anders aussieht. Im Stall kannst du danach alles selbst ändern.
 
 | Eigenschaft | Auswahl |
 |---|---|
+| **Name** | Zufällig aus einer Namensliste in `SETTINGS`. Selbst eintippen geht auch. |
 | **Rasse** | KWPN, Englisches Vollblut, Friese, Haflinger, Hannoveraner |
-| **Fellfarbe** | Apfelschimmel, Brauner, Schecke, Fuchs |
-| **Name** | Zufällig aus einer Namensliste in `SETTINGS` |
+| **Fellfarbe** | Apfelschimmel, Brauner, Schecke, Fuchs, Rappe |
 
-**Offen:** Darf jede Rasse jede Farbe haben? Echte Friesen sind immer schwarz, und Haflinger sind immer Füchse mit heller Mähne. Vorschlag: Friese bekommt Rappe als fünfte Farbe, Haflinger ist immer Fuchs, die anderen Rassen werden zufällig.
+Passend zur echten Rasse: Ein Friese ist immer ein Rappe, ein Haflinger immer ein Fuchs mit heller Mähne. Die anderen Rassen gibt es in allen Farben.
 
 ### Ausrüstung
-
-Jedes Pferd kann so ausgerüstet werden:
 
 | Teil | Auswahl |
 |---|---|
 | **Sattel** | Springsattel, Dressursattel, Westernsattel, Vielseitigkeitssattel |
-| **Schabracke** | Passt unter jeden Sattel. Farbe wählbar. |
+| **Schabracke** | Passt unter jeden Sattel. Farben: Blau, Weiss, Rot, Schwarz, Rosa, Grün |
 | **Zaum** | Mexikanischer Zaum, Englischer Zaum |
 | **Gamaschen** | Hartschalengamaschen, vorne und hinten, mit oder ohne Fell |
 
-**Offen:** Macht die Ausrüstung im Spiel einen Unterschied? Vorschlag: Der Springsattel gibt auf dem Reitplatz einen kleinen Bonus, der Dressursattel in der Reithalle. Sonst ist alles nur Aussehen.
+Der Springsattel gibt auf dem Reitplatz einen kleinen Bonus, der Dressursattel in der Reithalle. Alles andere ist nur fürs Aussehen.
+
+### Pferd einrichten im Stall
+
+1. Vor eine Box reiten und `E` drücken. Das Pferd erscheint gross auf dem Bildschirm.
+2. Mit `↑` `↓` wählst du, was du ändern willst: Name, Rasse, Fellfarbe, Sattel, Schabracke, Zaum, Gamaschen.
+3. Mit `←` `→` blätterst du durch die Möglichkeiten. Das Pferd ändert sich sofort.
+4. `Enter` heisst »mit diesem Pferd reiten«. `Esc` geht zurück, ohne das Pferd zu wechseln.
+
+Pferde und Ausrüstung bleiben nach dem Neuladen erhalten.
 
 ### Reithalle: Dressur
 
-**Offen, Vorschlag:** Auf dem Boden der Halle leuchtet eine Figur auf (Kreis, Schlangenlinie, Diagonale). Du reitest sie nach. Je genauer du auf der Linie bleibst, desto mehr Punkte. Am Ende gibt es eine Note und eine Schleife 🎀.
+Auf dem Boden der Halle leuchtet eine Figur auf (Kreis, Schlangenlinie, Diagonale). Du reitest sie nach. Je genauer du auf der Linie bleibst, desto mehr Punkte. Am Ende gibt es eine Note und eine Schleife 🎀.
 
 ### Reitplatz: Springen
 
-**Offen, Vorschlag:** Ein Parcours mit nummerierten Hindernissen. Du reitest sie der Reihe nach und springst mit der `Leertaste`. Die Zeit läuft. Eine umgeworfene Stange gibt 4 Fehlerpunkte. Die Bestzeit ohne Fehler wird gespeichert.
-
-### Fragen an euch
-
-1. Wie bedient man den Stall? Vorschlag: Vor eine Box reiten, `E` drücken. Dann wählst du mit den Pfeilen Sattel, Schabracke, Zaum und Gamaschen aus. `Enter` heisst »mit diesem Pferd reiten«.
-2. Wie viele Hindernisse hat der Parcours, und wie heissen sie (Steilsprung, Oxer, Wassergraben)?
-3. Bleiben deine Pferde und ihre Ausrüstung nach dem Neuladen erhalten? Vorschlag: ja.
-4. Welche Farben gibt es für die Schabracke?
+Ein Parcours mit 8 nummerierten Hindernissen: Steilsprünge, Oxer und ein Wassergraben. Du reitest sie der Reihe nach und springst mit der `Leertaste`. Die Zeit läuft. Eine umgeworfene Stange gibt 4 Fehlerpunkte. Die Bestzeit ohne Fehler wird gespeichert.
 
 ### Abstimmung mit der 3D-Welt
 
@@ -235,9 +235,9 @@ Jeder Schritt ist **eine Änderung und ein Commit**. Nach jedem Schritt laden wi
 |---|---|---|
 | 19 | **Zuhause und Reitstall auf der Karte** | Haus und Reitstall stehen nebeneinander. Das Spiel startet vor dem Haus. |
 | 20 | **Stallgasse mit 6 Boxen** | Jede Box hat Namensschild, Heu, Wassereimer und Einstreu. In jeder steht ein Pferd. |
-| 21 | **Zufällige Pferde** | Jedes Pferd hat Name, Rasse und Fellfarbe. Nach einem Neustart sind es andere. |
-| 22 | **Pferd auswählen** | Vor einer Box `E` drücken zeigt das Pferd. `Enter` wählt es, und du reitest mit ihm weiter. |
-| 23 | **Ausrüstung** | Sattel, Schabracke, Zaum und Gamaschen lassen sich wählen und sind am Pferd zu sehen. |
+| 21 | **Zufällige Pferde** | Jedes Pferd hat zufällig Name, Rasse und Fellfarbe. Friese ist Rappe, Haflinger ist Fuchs. |
+| 22 | **Pferd einrichten** | Vor einer Box `E` drücken zeigt das Pferd gross. Name, Rasse und Fellfarbe lassen sich mit den Pfeilen ändern. `Enter` wählt es zum Reiten. |
+| 23 | **Ausrüstung** | Sattel, Schabracke (mit Farbe), Zaum und Gamaschen lassen sich im selben Bildschirm wählen und sind am Pferd zu sehen. |
 | 24 | **Pferde speichern** | Pferde und Ausrüstung sind nach dem Neuladen noch da. |
 | 25 | **Reitplatz mit Parcours** | Hindernisse in der richtigen Reihenfolge springen, Zeit und Fehlerpunkte zählen, Bestzeit bleibt gespeichert. |
 | 26 | **Reithalle mit Dressur** | Eine Figur leuchtet auf, du reitest sie nach und bekommst eine Note und eine Schleife. |

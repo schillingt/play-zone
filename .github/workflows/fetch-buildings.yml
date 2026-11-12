@@ -1,0 +1,51 @@
+name: Fetch swisstopo buildings (one-off)
+
+# Lädt einmalig die swissBUILDINGS3D-Kacheln, die unsere Spielkarte abdecken,
+# wandelt sie mit tools/swisstopo_to_game.py um und legt assets/gebaeude.js in den Branch.
+on:
+  push:
+    branches: ['claude/**']
+    paths: ['.github/workflows/fetch-buildings.yml']
+
+permissions:
+  contents: write
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download tiles from data.geo.admin.ch
+        shell: python3 {0}
+        run: |
+          import io, json, os, urllib.request, zipfile
+          BBOX = '8.4980,47.1500,8.5220,47.1830'   # Spielkarte mit etwas Rand (lon/lat)
+          url = ('https://data.geo.admin.ch/api/stac/v0.9/collections/'
+                 f'ch.swisstopo.swissbuildings3d_3_0/items?bbox={BBOX}&limit=100')
+          get = lambda u: urllib.request.urlopen(urllib.request.Request(u, headers={'User-Agent': 'play-zone-game-map'}), timeout=300)
+          items = json.load(get(url))['features']
+          os.makedirs('tiles', exist_ok=True)
+          for item in items:
+              print('item', item['id'], list(item['assets']))
+              gml = [a for a in item['assets'].values() if 'gml' in a['href'].lower() and a['href'].endswith('.zip')]
+              if not gml:
+                  continue
+              href = gml[0]['href']
+              print('  download', href)
+              with zipfile.ZipFile(io.BytesIO(get(href).read())) as z:
+                  for name in z.namelist():
+                      if name.lower().endswith('.gml'):
+                          z.extract(name, 'tiles')
+                          print('  ->', name)
+          found = [os.path.join(d, f) for d, _, fs in os.walk('tiles') for f in fs if f.endswith('.gml')]
+          if not found:
+              raise SystemExit('no CityGML tiles found')
+      - name: Convert to assets/gebaeude.js
+        run: python3 tools/swisstopo_to_game.py $(find tiles -name '*.gml' | sort) -o assets/gebaeude.js
+      - name: Commit the result
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898732+github-actions[bot]@users.noreply.github.com"
+          git add assets/gebaeude.js
+          git commit -m "Add real 3D buildings from swisstopo for the game map"
+          git push
